@@ -37,14 +37,83 @@ def adcode2weather(adcode='430100'):
 
 def location2geo(address):
     """根据地址查询经纬度"""
-from urllib import request
-import json
-key = '1f5596da6d816e3112aa125f00e5dd9a'
-gurl = (u'http://restapi.amap.com/v3/geocode/geo?'
-        'key=%s'
-        'address=%s'
-        'output=json'
-        % (key, address)
-)
-result = request.urlopen(request.Request(gurl)).read()
+    import json
+    from urllib import request
+    from urllib.parse import quote
+    address = '湖南省长沙市雨花区湖南商会大厦'
+    key = '1f5596da6d816e3112aa125f00e5dd9a'
+    gurl = ('http://restapi.amap.com/v3/geocode/geo'
+            '?key=%s'
+            '&address=%s'
+            '&output=json'
+            % (key, address)
+    )
+    gurl = quote(gurl, safe='/:?&=')
+    tmp = json.loads(request.urlopen(request.Request(gurl)).read())
+    result = []
+    for i in tmp['geocodes']:
+        result.append({'address':i['formatted_address'],
+                    'province':i['province'],
+                    'citycode':i['citycode'],
+                    'city':i['city'],
+                    'district':i['district'],
+                    'township':i['township'],
+                    'adcode':i['adcode'],
+                    'street':i['street'],
+                    'location':i['location'],
+                    })
+    return result
 
+t = location2geo('湖南省长沙市雨花区芙蓉中路湖南商会大厦')
+
+def citysearch(keywords, adcode='430102'):
+    """查询指定城市, 按adcode可指定到区内的关键字位置。默认adcode=430111为长沙市芙蓉区"""
+    import json
+    from urllib import request
+    from urllib.parse import quote
+    key = '1f5596da6d816e3112aa125f00e5dd9a'
+    gurl = ('http://restapi.amap.com/v3/place/text'
+            '?key=%s'
+            '&keywords=%s'
+            '&city=%s'
+            '&citylimit=true'
+            '&output=JSON'
+            %(key, keywords, adcode)
+    )
+    gurl = quote(gurl, safe='/:?&=')
+    tmp = json.loads(request.urlopen(request.Request(gurl)).read())
+
+def localsearch(keywords, location='112.986009,28.149427', radius='500000'):
+    """按上传的地理位置，搜索周边。默认位置为商会大厦，周边1千米。最大范围不超过50千米"""
+    import json
+    from urllib import request
+    from urllib.parse import quote
+    key = '1f5596da6d816e3112aa125f00e5dd9a'
+    gurl = ('http://restapi.amap.com/v3/place/around'
+            '?key=%s'
+            '&location=%s'
+            '&keywords=%s'
+            # '&city=%s ' # 可指定adcode
+            '&radius=%s'
+            '&sortrule=distance'
+            '&offset=10'
+            '&output=JSON'
+            % (key, location, keywords, radius)
+    )
+    gurl = quote(gurl, safe='/:?&=')
+    tmp = json.loads(request.urlopen(request.Request(gurl)).read())
+    result = []
+    for i in tmp['pois']:
+        result.append({
+            'name':i['name'],
+            'address':i['address'],
+            'location':i['location'],
+            'tel':i['tel'],
+            'distance':i['distance']
+        })
+    return result
+
+td = localsearch('红烧肉')
+
+
+http://restapi.amap.com/v3/place/around?parameters 
