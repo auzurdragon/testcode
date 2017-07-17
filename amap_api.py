@@ -93,6 +93,7 @@ def localsearch(keywords, location='112.986009,28.149427', radius='500000'):
             '?key=%s'
             '&location=%s'
             '&keywords=%s'
+            '&types=120100|120200|120300|130000|150000'
             # '&city=%s ' # 可指定adcode
             '&radius=%s'
             '&sortrule=distance'
@@ -106,6 +107,8 @@ def localsearch(keywords, location='112.986009,28.149427', radius='500000'):
     for i in tmp['pois']:
         result.append({
             'name':i['name'],
+            'type':i['type'],
+            'typecode':i['typecode'],
             'address':i['address'],
             'location':i['location'],
             'tel':i['tel'],
@@ -113,7 +116,43 @@ def localsearch(keywords, location='112.986009,28.149427', radius='500000'):
         })
     return result
 
-td = localsearch('红烧肉')
 
 
-http://restapi.amap.com/v3/place/around?parameters 
+def yuntu_createmap(tablename):
+    """在高德云图上创建表, POST请示"""
+    import json
+    from urllib import request
+    from urllib.parse import urlencode
+    head = {
+        'Content-Type':'application/x-www-form-urlencoded'
+    }
+    body = {
+        'key':'1f5596da6d816e3112aa125f00e5dd9a',
+        'name':tablename, # 指定表名
+    }
+    body = urlencode(body)
+    body = bytes(body,'utf-8')
+    gurl = 'http://yuntuapi.amap.com/datamanage/table/create'
+    req = request.Request(gurl, data=body, headers=head)
+    result = request.urlopen(req).read().decode()
+    result = eval(result)
+    if result['status']==1:
+        print ('Table : %s created! tableid :%s' %(tablename, result['tableid']))
+        return result['tableid']
+    else :
+        print('Create table error: %s, infocode: %s, status: %s '
+            %(result['info'], result['infocode'], result['status']))
+
+
+def yuntu_insertOne():
+"""插入单条数据"""
+from urllib import request
+from urllib.parse import urlencode
+
+head={'Content-Type':'application/x-www-form-urlencoded'}
+body={
+    'key':key,
+    'tableid':
+}
+
+http://yuntuapi.amap.com/datamanage/data/create
