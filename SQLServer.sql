@@ -1,21 +1,26 @@
-CREATE TABLE iTRO_UserStats
-(
+CREATE TABLE Stats_User(
     ID INT IDENTITY(1,1),
-    sDate DATE,
-    regUser INT,
-    actUser INT,
-    ret1User INT,
-    ret2User INT,
-    ret3User INT,
-    ret4User INT,
+    sDate DATE,   --日期
+    regUser INT,  --新增注册用户
+    newUser INT,  --有效新增用户，注册当日有登录
+    actUser INT,  --活跃用户，当日有登录
+    ret1User INT, --次日留存用户，注册次日有登录
+    ret2User INT, -- 2日留存用户
+    ret3User INT, -- 3日留存用户
+    ret4User INT, -- 4日留存用户
     ret5User INT,
     ret6User INT,
     ret7User INT,
     ret15User INT,
     ret30User INT,
-    retMonthUser INT,
-    chargeUser INT,
-    chargeNum INT,
-    chargement Money
-
+    retMonthUser INT, -- 次月（自然月）留存用户
+    chargeUser INT,   -- 充值用户，对账户进行了充值
+    chargeNum INT,    -- 充值次数
+    chargement Money,  -- 充值金额
+    withdrawUser INT, -- 提现成功用户
+    withdrawNum INT,  -- 提现成功次数
+    withdrawnment INT,    -- 提现成功金额
+    onlineTime BIGINT,    -- 合计在线时长：秒
+    ACU INT,  -- 平均在线人数
+    PCU INT,  -- 最高在线人数
 )
