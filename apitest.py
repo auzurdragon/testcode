@@ -59,6 +59,18 @@ def push_turnorder(orderid, money, userid, toidlist):
     apiurl = apihost+'api/turnorder/turnorder'
     # 构建post请求header
     head = {'Content-Type':'application/json'}
+<<<<<<< HEAD
+=======
+    # 构建发往商户的userid列表
+    toid = []
+    toid.append("5924d830048e8010f4bc909a") # db.iTRO_User.UserName:"test14"
+    toid.append("58dcbf2d2c84501d45860445")  # db.iTRO_User.UserName:"test12"
+    toid.append("58d88fd36c6df5176055c4b3")  # db.iTRO_User.UserName:"liuyuxuan"
+    toid.append("58d894a66c6df5176055c4b4")  # db.iTRO_User.UserName:"tututu"
+    toid.append("58db1cd16c6df5073025ce22")  # db.iTRO_User.UserName:"a123456"
+    toid.append("58df648e6c6df54564e76dc1")  # db.iTRO_User.UserName:"qa123456"
+    toid.append("58f03f98048e801390c0ed1c")  # db.iTRO_User.UserName:"plm123"
+>>>>>>> 54546a04be67fbb48f5b8207095ab93101284110
     # 使用接口将orderlist中的订单转发给toid
     body = {
         "userid": userid,
@@ -73,6 +85,12 @@ def push_turnorder(orderid, money, userid, toidlist):
     res = request.urlopen(req)
     print(res.read())
 
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> 54546a04be67fbb48f5b8207095ab93101284110
 # 定义接口主机和数据库
 toid = []
 toid.append("5924d830048e8010f4bc909a") # db.iTRO_User.UserName:"test14"
@@ -103,6 +121,7 @@ for i in orderlist:
 
 
 
+<<<<<<< HEAD
 def post_push(userlist,typenum,contentstr,titlestr):
 """list接口推送消息"""
 import json
@@ -142,11 +161,43 @@ body = {
         '"type": '+str(typenum)
     ),
     'tiltle':titlelist[typenum],
+=======
+apihost = 'http://47.92.72.108:10086/'
+conn_ali = '47.92.72.108:28010'
+toid = []
+toid.append("5924d830048e8010f4bc909a") # db.iTRO_User.UserName:"test14"
+toid.append("58dcbf2d2c84501d45860445")  # db.iTRO_User.UserName:"test12"
+toid.append("58d88fd36c6df5176055c4b3")  # db.iTRO_User.UserName:"liuyuxuan"
+toid.append("58d894a66c6df5176055c4b4")  # db.iTRO_User.UserName:"tututu"
+toid.append("58db1cd16c6df5073025ce22")  # db.iTRO_User.UserName:"a123456"
+toid.append("58df648e6c6df54564e76dc1")  # db.iTRO_User.UserName:"qa123456"
+toid.append("58f03f98048e801390c0ed1c")  # db.iTRO_User.UserName:"plm123"
+
+storeid = ''
+pid = ''
+title = 'testhuan'
+content = '测试消息20170718 10：51'
+
+import json
+from urllib import request
+# 拼接转发接口
+apiurl = apihost+'api/PushMessage/insertAct'
+# 构建post请求header
+head = {'Content-Type':'application/json'}
+# 使用接口将orderlist中的订单转发给toid
+body = {
+    "userid": userid,
+    "storeid": storeid,
+    "pid": pid,
+    "title": title,
+    "content": content
+>>>>>>> 54546a04be67fbb48f5b8207095ab93101284110
 }
 body = json.dumps(body)
 print(body)
 body = bytes(body, 'utf-8')
 req = request.Request(apiurl, data=body, headers=head)
+<<<<<<< HEAD
 res = request.urlopen(req)
 print(res.read())
 
@@ -159,3 +210,6 @@ toid.append("58d88fd36c6df5176055c4b3")  # db.iTRO_User.UserName:"liuyuxuan"
 toid.append("58d894a66c6df5176055c4b4")  # db.iTRO_User.UserName:"tututu"
 toid.append("58db1cd16c6df5073025ce22")  # db.iTRO_User.UserName:"a123456"
 
+=======
+res = request.urlopen(req)
+>>>>>>> 54546a04be67fbb48f5b8207095ab93101284110

@@ -16,3 +16,21 @@ db.iTRO_RedPacket.mapReduce(
     },
     {out:'tmp_f_redpacket'}
 )
+
+
+// 按productid分组统计销量
+db.iTRO_UserChildOrder.aggregate([
+    {$match:{"storeid" : "596c1929048e800f281c903e",
+             "orderstatus" : 2,
+             "date" : {
+                 "$gte" : NumberLong(1500480000),
+                 "$lte" : NumberLong(1500566399)}
+            }
+    },
+    {$group:{
+        '_id':'$productid',
+        'sum':{$sum:'$num'}
+    }},
+])
+
+
