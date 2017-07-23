@@ -1,5 +1,26 @@
-import pymssql
-conn = pymssql.connect(host='192.168.5.237',
+import pymssql,time
+from pymongo import MongoClient
+
+
+mongo_ali = '47.92.72.108:28010'
+
+def get_userstats(datestr="2017/07/01"):
+"""从mongodb查询数据"""
+import pymssql,time
+from pymongo import MongoClient
+datestr = '2017/07/01'
+datestamp = time.strptime(datestr+' 00:00:00', '%Y/%m/%d %H:%M:%S')
+datestamp = int(time.mktime(datestamp))
+
+mongo_ali = 'host':'47.92.72.108:28010'
+conn = MongoClinet(mongo_ali)
+db = conn.iTROdb
+coll = db.iTRO_User
+coll.aggregate([
+    {'$match':{'_id'}}
+])
+
+conn_ali = pymssql.connect(host='192.168.5.237',
                        port='1433',
                        user='sa',
                        password='qwe123',
