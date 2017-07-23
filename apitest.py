@@ -59,8 +59,6 @@ def push_turnorder(orderid, money, userid, toidlist):
     apiurl = apihost+'api/turnorder/turnorder'
     # 构建post请求header
     head = {'Content-Type':'application/json'}
-<<<<<<< HEAD
-=======
     # 构建发往商户的userid列表
     toid = []
     toid.append("5924d830048e8010f4bc909a") # db.iTRO_User.UserName:"test14"
@@ -70,7 +68,6 @@ def push_turnorder(orderid, money, userid, toidlist):
     toid.append("58db1cd16c6df5073025ce22")  # db.iTRO_User.UserName:"a123456"
     toid.append("58df648e6c6df54564e76dc1")  # db.iTRO_User.UserName:"qa123456"
     toid.append("58f03f98048e801390c0ed1c")  # db.iTRO_User.UserName:"plm123"
->>>>>>> 54546a04be67fbb48f5b8207095ab93101284110
     # 使用接口将orderlist中的订单转发给toid
     body = {
         "userid": userid,
@@ -85,12 +82,9 @@ def push_turnorder(orderid, money, userid, toidlist):
     res = request.urlopen(req)
     print(res.read())
 
-<<<<<<< HEAD
-=======
 
 
 
->>>>>>> 54546a04be67fbb48f5b8207095ab93101284110
 # 定义接口主机和数据库
 toid = []
 toid.append("5924d830048e8010f4bc909a") # db.iTRO_User.UserName:"test14"
