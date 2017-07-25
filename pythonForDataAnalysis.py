@@ -1,5 +1,8 @@
-# 0723：来自bit.ly的1.usa.gov数据，
-path = 'http://bit.ly/ch02/usagov_bitly_data2012-03-16-1331923249.txt'
+# 
+"""
+    《Python for Data Analysis》，作者：Wes McKinney
+    数据源：http://www.grouplens.org/node , MovieLens用户提供的电影评分数据
+"""
 
 import pymongo
 conn = pymongo.MongoClient(host='112.74.161.9', port=28010)
@@ -12,7 +15,7 @@ except expression as identifier:
 
 db = conn.BJDdb
 coll = db.BJD_User
-rec = [i for i in coll.find(limit=100, sort=[('_id':-1)])] # 从数据库中取出100条用户记录
+rec = [i for i in coll.find(limit=500, sort=[('_id', pymongo.DESCENDING),])] # 从数据库中取出最后的500条用户记录
 conn.close()
 
 # 按nativename分组计数
@@ -45,12 +48,20 @@ def get_counts(sequence):
 def get_counts(sequence,countfield):
     """使用pandas.DataFrame的数据框处理方法进行计数"""
     from pandas import DataFrame
+    from matplotlib import pyplot as plt
     frame = DataFrame(sequence) # 将数据对象转换为DataFrame数据框
-    return frame[countfield].value_counts() # 使用value_counts()方法计数
+    t = frame[countfield].value_counts() # 使用value_counts()方法计数
+    print(t[:10])   # 打印出TOP10
+    t[:10].plot(kind='barh', rot=0) # 对TOP10生成绘图对象，横向条形图
+    plt.show()   # 使用matplotlib绘图
+    return t
 
+import pandas as pd
+unames = ['user_id', 'gender', 'age', 'occupation', 'zip']
+users = pd.read_table('E:/MyDownload/ml-1m/users.dat', sep='::', header=None, names=unames)
 
+rnames = ['user_id', 'movie_id', 'rating', 'timestamp']
+ratings = pd.read_table('E:/MyDownload/ml-1m/ratings.dat', sep='::', header=None, names=rnames)
 
-
-from pandas import DataFrame, Series
-import pandas as pd; import numpy as np
-frame = DataFrame(rec)
+mnames = ['movie_id', 'title', 'genres']
+movies = pd.read_table('E:/MyDownload/ml-1m/movies.dat', sep='::', header=None, names=mnames)
