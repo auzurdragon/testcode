@@ -18,6 +18,17 @@ coll = db.BJD_User
 rec = [i for i in coll.find(limit=500, sort=[('_id', pymongo.DESCENDING),])] # 从数据库中取出最后的500条用户记录
 conn.close()
 
+def conn_alimongo(dbname='STUdb', collname='ml1m_users'):
+    """连接MongoDB数据库"""
+    import pymongo
+    conn = pymongo.MongoClient(host='112.74.161.9', port=28010)
+    db = conn.get_database(dbname)
+    if db.authenticate('writeuser', '51write'):
+        coll = db.get_collection(collname)
+        return coll
+    else:
+        print ('db.authenticate() : false! ')
+
 # 按nativename分组计数
 t_nativename = [i['nativename'] for i in rec]
 def get_counts(sequence):
@@ -56,12 +67,13 @@ def get_counts(sequence,countfield):
     plt.show()   # 使用matplotlib绘图
     return t
 
+def get_movielens():
 import pandas as pd
 unames = ['user_id', 'gender', 'age', 'occupation', 'zip']
 users = pd.read_table('E:/MyDownload/ml-1m/users.dat', sep='::', header=None, names=unames)
-
 rnames = ['user_id', 'movie_id', 'rating', 'timestamp']
 ratings = pd.read_table('E:/MyDownload/ml-1m/ratings.dat', sep='::', header=None, names=rnames)
-
 mnames = ['movie_id', 'title', 'genres']
 movies = pd.read_table('E:/MyDownload/ml-1m/movies.dat', sep='::', header=None, names=mnames)
+
+t = []
