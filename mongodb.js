@@ -100,3 +100,21 @@ db.iTRO_UserChildOrder.aggregate([
     }},
     {$sort:{'_id':-1}}
 ])
+
+
+db.iTRO_UserChildOrder.aggregate([
+    {$match:{'storeid':'58d078236c6df51fe06a6bb5','date':{$gte:1495093437}, 'status':3}},
+    {$project:{
+        '_id':1,
+        'storeid':1,
+        'sdate':{$floor:{$divide:['$date',86400]}},
+        'sdate2':{$dateToString:{
+            format:'%Y-%m-%d',
+            date:{$add:[new Date(28800000), {$multiply:['$date', 1000]}]},
+        }},
+    }},
+    {$group:{
+        '_id':{'sdate':'$sdate', 'sdate2':'$sdate2'},
+        'paynum':{$sum:1},
+    }}
+])
