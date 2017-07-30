@@ -86,6 +86,7 @@ def get_pivot(dataObj,valuesVar, indexVar, columnsVar, aggfunc):
     t = dataObj.pivot_table(valuesVar, index=indexVar, columns=columnsVar, aggfunc=aggfunc)
     return t
 
+# 使用pandas读取数据对象为dataFrame
 import pandas as pd
 datapath = 'E:/MyDownload/ml-1m/users.dat'
 datanames = ['user_id', 'gender', 'age', 'occupation', 'zip']
@@ -97,7 +98,9 @@ datapath = 'E:/MyDownload/ml-1m/movies.dat'
 datanames = ['movie_id', 'title', 'genres']
 movies = get_movielens(datapath, datanames)
 
+# 使用pd.merge()合并数据框
 sdata = pd.merge(pd.merge(ratings, users), movies)
+# 建立数据透视表
 mean_ratings = get_pivot(sdata, 'rating', 'title', 'gender', 'mean')
 
 
