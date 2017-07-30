@@ -67,13 +67,37 @@ def get_counts(sequence,countfield):
     plt.show()   # 使用matplotlib绘图
     return t
 
-def get_movielens():
-import pandas as pd
-unames = ['user_id', 'gender', 'age', 'occupation', 'zip']
-users = pd.read_table('E:/MyDownload/ml-1m/users.dat', sep='::', header=None, names=unames)
-rnames = ['user_id', 'movie_id', 'rating', 'timestamp']
-ratings = pd.read_table('E:/MyDownload/ml-1m/ratings.dat', sep='::', header=None, names=rnames)
-mnames = ['movie_id', 'title', 'genres']
-movies = pd.read_table('E:/MyDownload/ml-1m/movies.dat', sep='::', header=None, names=mnames)
+def get_movielens(dpath, dname):
+    """使用pandas.read_table()读取数据"""
+    import pandas as pd
+    t = pd.read_table(dpath, sep='::', header=None, names=dname)
+    return t
 
-t = []
+def get_pivot(dataObj,valuesVar, indexVar, columnsVar, aggfunc):
+    """
+        使用pandas.pivot_table()对dataObj进行分类汇总
+        valuesVar-需要汇总的变量,
+        indexVar-行分类变量,
+        columnsVar-列分类变量,
+        aggfunc-汇总函数
+        返回结果为pandas对象
+    """
+    import pandas
+    t = dataObj.pivot_table(valuesVar, index=indexVar, columns=columnsVar, aggfunc=aggfunc)
+    return t
+
+import pandas as pd
+datapath = 'E:/MyDownload/ml-1m/users.dat'
+datanames = ['user_id', 'gender', 'age', 'occupation', 'zip']
+users = get_movielens(datapath, datanames)
+datapath = 'E:/MyDownload/ml-1m/ratings.dat'
+datanames = ['user_id', 'movie_id', 'rating', 'timestamp']
+ratings = get_movielens(datapath, datanames)
+datapath = 'E:/MyDownload/ml-1m/movies.dat'
+datanames = ['movie_id', 'title', 'genres']
+movies = get_movielens(datapath, datanames)
+
+sdata = pd.merge(pd.merge(ratings, users), movies)
+mean_ratings = get_pivot(sdata, 'rating', 'title', 'gender', 'mean')
+
+
