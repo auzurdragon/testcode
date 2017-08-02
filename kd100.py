@@ -36,3 +36,13 @@ gurl = (
 req = request.Request(gurl)
 result = request.urlopen(req).read().decode()
 
+
+import pandas as pd
+kd = pd.read_table(
+    'kd100.txt',
+    sep='::',
+    header=None,
+    names=['kdcode','kdname','kdtag'],
+    encoding='utf-8',
+    engine='python'
+)
