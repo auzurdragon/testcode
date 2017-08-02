@@ -6,10 +6,10 @@
 
 import pymongo
 conn = pymongo.MongoClient(host='112.74.161.9', port=28010)
-conn.BJDdb.authenticate('writeuser','51write')
+conn.mydata.authenticate('writeuser','51write')
 try:
-    db = conn.BJDdb
-    coll = db.BJD_User
+    db = conn.mydata
+    coll = db.ml_ratings
 except expression as identifier:
     print(identifier)
 
@@ -86,11 +86,26 @@ def get_pivot(dataObj,valuesVar, indexVar, columnsVar, aggfunc):
     t = dataObj.pivot_table(valuesVar, index=indexVar, columns=columnsVar, aggfunc=aggfunc)
     return t
 
-# 使用pandas读取数据对象为dataFrame
-import pandas as pd
+# 将dataFrame转存入MongoDB
+def to_mongodb(dataname, mongohost='localhost', mongoport=28010, dbname='mydata', collname)
+    """
+    """
+    import pandas as pd
+    from pymongo import MongoClient
+    tmp = json.loads(ratings.T.to_json())
+    insertlist = []
+    for i in range(len(tmp)):
+        insertlist.append(tmp.popitem()[1])
+    
+    conn = MongoClient(host=mongohost, port=mongoport)
+    db = conn.get_database(dbname)
+    coll = db.get_collection(collname)
+    coll.insert_many(insertlist)
+
 datapath = 'E:/MyDownload/ml-1m/users.dat'
 datanames = ['user_id', 'gender', 'age', 'occupation', 'zip']
 users = get_movielens(datapath, datanames)
+
 datapath = 'E:/MyDownload/ml-1m/ratings.dat'
 datanames = ['user_id', 'movie_id', 'rating', 'timestamp']
 ratings = get_movielens(datapath, datanames)
@@ -98,9 +113,12 @@ datapath = 'E:/MyDownload/ml-1m/movies.dat'
 datanames = ['movie_id', 'title', 'genres']
 movies = get_movielens(datapath, datanames)
 
+to_mongodb(users,collname='ml_users')
+to_mongodb(ratings,collname='ml_ratings')
+to_mongodb(movies,collname='ml_movies')
+
 # 使用pd.merge()合并数据框
 sdata = pd.merge(pd.merge(ratings, users), movies)
 # 建立数据透视表
 mean_ratings = get_pivot(sdata, 'rating', 'title', 'gender', 'mean')
-
 
