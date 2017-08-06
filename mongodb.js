@@ -118,3 +118,7 @@ db.iTRO_UserChildOrder.aggregate([
         'paynum':{$sum:1},
     }}
 ])
+
+// 在同个实例内转移表，不能用于集群
+use admin // 必须在admin下使用
+db.runCommand({renameCollection:'sourcedb.oldName', to:'targetdb.newName'})
