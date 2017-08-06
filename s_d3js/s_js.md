@@ -193,3 +193,12 @@ d3.csv("food.csv", function(error, data) {
 ```
 ## d3.tsv() 加载tsv文件
 ## d3.json()  加载JSON数据
+
+## .enter() 选择不存在的元素
+```
+de.select("body").selectAll("p")
+    .data(dataset)
+    .enter()
+    .append("p")
+    .text("New paragraph!");
+```
