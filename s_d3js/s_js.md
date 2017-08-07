@@ -2,6 +2,9 @@
 ```
 typeof <varname>; // 查看变量类型
 window; // 在浏览器中是一个顶级对象，包含所有JS中能直接访问到的对象。
+.attr("class", "bar");  // 添加class="bar"
+.classed("bar", true);  // 给选中的元素添加类bar, false时则是删除类bar
+.style(height,"70 px");   // 给选中的元素添加style属性，例中值为 style="height:70 px"
 ```
 
 ## 变量赋值
@@ -202,3 +205,4 @@ de.select("body").selectAll("p")
     .append("p")
     .text("New paragraph!");
 ```
+
