@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>D3JS,比例尺</title>
+        <script type="text/javascript" src="../d3/d3.js"></script>
+    </head>
+    <body>
+        <h1>比例尺说明</h1>
+        <p>
+            比例尺是一组把输入域映射为输出范围的函数。</br>
+            D3的比例尺就是那些你定义的带有参数的函数。定义好之后，就可以调用这些比例尺函数，传入值，就能返回按比例生成的输出值。</br>
+            坐标轴只是比例尺的一种形象表示，与比例尺是两样东西。</br>
+            比例尺包括<strong>输入值域</strong>和<strong>输出范围</strong>。
+        </p>
+        <h1>示例<h1>
+        <div class="example"></div>
+        <script type="text/javascript">
+            var dataset = [100, 200, 300, 400, 500]
+            var scale = d3.scaleLinear()    // 定义一个线性比例尺, V3版为d3.scale.linear()
+                          .domain([100, 500])  // 指定比例尺的输入值域为100-500，必须用数组包装
+                          .range([10, 350])    // 指定比例尺的输出范围为10-350
+            var scale = d3.scaleLinear()
+                          .domain([d3.min(dataset, function(d){return d[0];}),  
+                                   d3.max(dataset, function(d){return d[0];})])
+                          .range([0, w])
+        </script>
+    </body>
+</html>
