@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>20170808, D3, 使用svg绘制条形图</title>
+        <script type="text/javascript" src="../d3/d3.js"></script>
+    </head>
+    <body>
+        <!-- 使用svg方法绘制条形图  -->
+        <div class="example1"></div>
+        <script type="text/javascript">
+            // 生成随机数组作为示例
+            var dataset = [];
+            for (var i = 1; i <20; i++){
+                dataset.push(Math.floor(Math.random() * 50));
+            };
+            console.log(dataset);
+            // 指定SVG的宽度和高度
+            var w = 500;
+            var h = 100;
+            var barPadding = 1;  // 指定条形的间距为1
+            // 添加svg标签
+            var svg = d3.select("body div.example1")
+                        .append("svg")
+                        .attr("width", w)
+                        .attr("height", h);
+            console.log(svg);
+            // 在svg中添加矩形元素rect
+            svg.selectAll("rect")
+               .data(dataset)
+               .enter()
+               .append("rect")
+               .attr("x", function(d, i){return i*(w/dataset.length)})
+               .attr("y", function(d){return h-d})
+               .attr("width", w/dataset.length - barPadding)
+               .attr("height", function(d){return d})
+               .attr("fill",function(d){return "rgb(0,0," + (d*10) + ")"});
+        </script>
+    </body>
+</html>
