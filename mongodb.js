@@ -122,3 +122,94 @@ db.iTRO_UserChildOrder.aggregate([
 // 在同个实例内转移表，不能用于集群
 use admin // 必须在admin下使用
 db.runCommand({renameCollection:'sourcedb.oldName', to:'targetdb.newName'})
+
+
+// 发布约会
+db.iTRO_publishmeet.insert({
+    '_id':,         // 记录id
+    'fromuser':,    // userid,发布者
+    'fromtime':,       // timestamp,发布时间
+    'meettime':,    // timestamp, 约会时间
+    'meettitle':,   // string,约会标题
+    'meetcontent':, // string,约会内容
+    'meetimg':[],   // array,urlstring,约会图片链接
+    'meetlimit':,   // int32,约会人数名额。
+    'enlistnum':,   // int32,约会报名人数，可与enlist合并
+    'membernum':,   // int32,约会参与人数，可与member合并
+    'avggrade':,    // float,约会的平均评分，展示时按1位小数四舍五入。
+    'meetstatus':,  // int32,约会状态，1-开始报名。2-活动进行中。3-活动结束。4-报名结束，报名人数已满。9-已关闭，活动开始7天后，不显示给前端。
+    'touser':[],    // array,userid,发布对象，预留字段
+    'toarea':[],    // array,string,发布地区，预留字段
+    'enlist':[      // array,报名用户和报名状态。
+        {
+            'userid':, // string,报名用户id
+            'status':, // int32,报名状态，1-报名中，等待发起者审核。2-报名成功，发起者同意。3-报名失败，发起者拒绝。0-可以报名，显示报名（按钮）
+        },
+    ],
+    'member':[          // array,userid,参与用户，报名且由发起者同意的用户。
+        {
+            'userid':,  // string,参与用户id
+            'grastatus':,   // int32,评价状态,1-可以评论，前端显示评价按钮。2-已评论，前端显示已评价状态
+            'gratime',  // timestamp,评价时间
+            'grade':,   // int32,参与用户的评分，允许空值, 5-非常满意，1-非常差
+            'content':, // string,用户的评价内容。
+        },
+    ],
+})
+
+
+// 发布订单
+db.iTRO_publishorder.insert({
+    '_id':,         // object,记录id
+    'fromuser':,    // string,发布用户id
+    'fromtime':,    // timestamp,发布时间
+    'ordertitle':,  //  string,发布订单标题
+    'ordercontent':,    // string,发布订单内容
+    'orderdictionary':,   // string,商品类目id
+    'ordertype':,          // int32,订单类型，1-就近购买, 2-指定地址
+    'payment':,           // int32,商品货款
+    'fee':,                // int32,小费，预留字段
+    'deliveryinfo':{,      // Document,配送用户信息,预留字段
+        'deliveryuser':,   // string,配送用户id
+        'deliverytel':,    // string,配送用户联系电话
+    },
+    'ordertime':,          // timestamp,送达时间要求
+    'orderstatus':,        // int32,订单状态，1-接单中，等待商户接单，2-配送中，商户正在配送。3-已送达，用户已收货。4-已完成，货款已支付给商户。10-已取消，发布者取消订单，不显示给前端
+    'checkinfo':{          // Document,收货人信息
+        'name':,          // string,收货人姓名
+        'checktel':,           // string,电话
+        'address':,      // string,省市区地址
+        'streets':,       // string,详细地址
+    },
+    'touser':[],          // array,userid,发布对象，预留字段
+    'toarea':[],          // array,string,发布地区，预留字段
+    'getinfo':{           // Document,收接订单的商户信息
+        'storeid':,       // string,店铺ID
+        'userid':,        // string,商户id
+        'storename':,     // string,店铺名称
+        'storelogo':,     // string,店铺logo
+        'gettel':,        // string,店铺联系电话
+    }
+})
+
+// 发布消息
+db.iTRO_publishmessage.insert({
+    '_id':,               // object,记录id
+    'fromuser':,          // string,发布用户id
+    'fromtime':,          // timestamp,发布时间
+    'fromlocation':{
+        'localtion':{
+            'type':'Point',     // 地理数据类型
+            'coordinates':[经度, 纬度],   // 经纬度，
+        },                // geoobject, 发布时的地理坐标，
+        'address':,       // string,发布时的省市区位置
+        'streets':,       // string,发布时的详细位置
+    },                    // Document,测试用geo对象保存地理位置信息 
+    'pushtime':,          // timestamp,推送时间，预留字段，以备将来加入审核
+    'messagestatus':,     // int32,消息状态，预留字段，以备将来加入审核，1-已推送，推送到个推。2-审核不通过，不进行推送。
+    'messagetitle':,      // string,消息标题
+    'messagecontent':,    // string,消息内容
+    'messageimg':[],      // array,urlstring,附带图片
+    'touser':[],          // array,string,预留字段，发布对象的用户id
+    'toarea':[],          // array,string,预留字段，发布地区
+})
