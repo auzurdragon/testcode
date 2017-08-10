@@ -14,8 +14,34 @@ window; // 在浏览器中是一个顶级对象，包含所有JS中能直接访�
 array.sort();  // 对数组中的元素按字符编码排序, 2>10
 array.sort(function(a,b){return a-b});   // 对数组中的数字元素按大小排序。
 Math.max.apply(Math, array);    // 返回数组中最大的元素。
+Math.sqrt(d);      // 求平方根
 d3.max(array);     // 返回数组中最大的元素，同上。
+d3.max(array, function(d){return d[0]});  // 如果数组内嵌有数组，则用d[0]指定要比较内嵌数组中的第1个元素。
 d3.min(array);     // 返回数组中最小的元素
+
+```
+
+## 比例尺操作d3.scale
+```
+d3.scaleLinear()           // 构建线性比例尺
+  .domain([num1, num2])    // 指定输入值域的范围，注意num1可以大于num2
+  .range([num3, num4]);    // 指定输出范围，num3也可以大于num4
+.nice()                    // 告诉比例尺取得为range()设置的任何值域，把两端扩展到最接近的整数
+.rangeRound()     // 代替range(),舍入到最接近的整数值。
+.clamp(true)      // 强制所有输出值都位于指定范围内。
+
+d3.scaleSqrt()    // 构建平方根比例尺
+d3.scalePow()     // 幂比例尺，适合值以指数级变化的数据集。
+d3.scaleLog()     // 对数比例尺
+d3.scaleQuantize()   // 输出范围为独立的值的线性比例尺，适合想把数据分类的情况。
+d3.scaleQuantile()   // 与quantize类似，输入值域是独立值，适合已经对数据分类的情况。
+d3.scaleOrdinal()    // 使用非定量值（如类名）作为输出的序数比例尺，非常适合比较苹果和桔子
+d3.scale
+```
+
+## 数轴
+```
+d3.svg.axis()      // 可以创建通用的数轴函数
 ```
 
 ## 变量赋值
