@@ -1,3 +1,10 @@
+## 常用属性
+```
+// 属性transform用于平移、缩放和旋转等变换， translate(x,y) 是平移，即把元素移动到(x,y)位置。
+.attr("transform", "translate(x,y)")    
+```
+
+
 ## 常用命令
 ```
 typeof <varname>; // 查看变量类型
@@ -7,6 +14,8 @@ window; // 在浏览器中是一个顶级对象，包含所有JS中能直接访�
 .style(height,"70 px");   // 给选中的元素添加style属性，例中值为 style="height:70 px"
 .append("div"); // 给选中的标签下增加子标签div
 .append("div").enter();   // 如果没有div标签，则添加一个空的div，并传递给下个方法
+
+d3.format(".1%")   // 将数字格式化为 100.0%  的样式
 ```
 
 ## 数组操作
@@ -41,17 +50,32 @@ d3.scale
 
 ## 数轴
 ```
-d3.svg.axis()      // 可以创建通用的数轴函数
-```
+d3.svg.axis().scale(xScale).orient("bottom")      // v3 可以创建通用的数轴函数
+d3.axisBottom(xScale)    // v4，创建x数轴
+d3.axisBottom(xScale).ticks(5)   // 设置刻度线的数为5，d3会自动做出一定调整。
 
+```
+## 分组元素g与call()方法
+> 前面的代码首先引用了 svg ，即 DOM 中的 SVG 元素。然后， append() 在这个元素的末尾追加了一个新的 g 元素。在 SVG 标签内， g 元素就是一个分组数轴（group）元素。分组元素是不可见的，跟 line 、 rect 和 circle 不一样，但它有两大用途：一是可以用来包含（或“组织”）其他元素，好让代码看起来简洁整齐；二是可以对整个分组应用变换，从而影响到该组中所有元素（ line 、 rect 和circle ）的视觉表现。关于变换，我们稍后就会介绍。
+
+> 创建了新的 g 元素后，直接在这个元素上面调用了 call() 方法。那么 call() 有什么用呢？
+
+> D3 的 call() 函数会取得（比如刚才代码链中）传递过来的元素，然后再把它交给其他函数。对我们这例子而言，传递过来的元素就是新的分组元素 g （虽然这个元素不是必需的，但鉴于数轴函数需要生成很多线条和数值，有了它就可以把所有元素都封装在一个分组对象内）。而 call() 接着把 g 交给了 xAxis 函数，也就是要在 g 元素里面生成数轴。
+
+```
+var xAxis = d3.axisBottom(xScale);
+svg.append("g").call(xAxis);
+```
 ## 变量赋值
+```
 var amount = 200;
 defaultColor = 'hot pink';
 var t = true;
+```
 
 ## 查看变量类型
 ```
-typeof amount;
+typeof <var>;
 ```
 ## 数组
 ```
@@ -142,6 +166,7 @@ var calculateGratuity = function(bill){
 ```
 
 # SVG, Scalable Vector Graphics, 可伸缩矢量图形。
+[SVG属性参考](https://developer.mozilla.org/zh-CN/docs/Web/SVG/Attribute)
 ## SVG创建简单的圆形
 ```
 <svg width="50" height="50">

@@ -4,6 +4,20 @@
         <meta charset="utf-8">
         <title>D3JS,比例尺</title>
         <script type="text/javascript" src="../d3/d3.js"></script>
+        <style type="text/css">
+            /* 选择 class="axis" 的类下的 path 和 line 标签，赋予{}中的属性 */
+            /* 通过CSS来给SVG中的元素应用样式时，必须使用SVG的属性名，不能使用常规的CSS属性  */
+            .axis path,
+            .axis line {
+                fill: none;
+                stroke: black;
+                shape_rendering: geometricPrecision;
+            }
+            .axis text {
+                font-family: sans-serif;
+                font-size: 12px;
+            }
+        </style>
     </head>
     <body>
         <h1>比例尺说明</h1>
@@ -25,7 +39,18 @@
                         .attr("width", w)
                         .attr("height", h);
             // 创建示例数据,每个元素第1值为x,第2个值为y
-            var dataset = [[5,20], [480, 90], [250, 50], [100, 33], [330,95], [410,12], [475, 44], [25, 67], [85, 21], [220, 88]];
+            // 静态数据
+            // var dataset = [[5,20], [480, 90], [250, 50], [100, 33], [330,95], [410,12], [475, 44], [25, 67], [85, 21], [220, 88]];
+            // 动态数据
+            var dataset = [];
+            var numDataPoints = 50;
+            var xRange = Math.random() * 1000;
+            var yRange = Math.random() * 1000;
+            for (var i = 0; i < numDataPoints; i++) {
+                var newNumber1 = Math.floor(Math.random() * xRange);
+                var newNumber2 = Math.floor(Math.random() * yRange);
+                dataset.push([newNumber1, newNumber2]);
+            };
             // 线性比例尺示例，无实际用途
             var scale = d3.scaleLinear()    // 定义一个线性比例尺, V3版为d3.scale.linear()
                           .domain([100, 500])  // 指定比例尺的输入值域为100-500，必须用数组包装
@@ -60,10 +85,29 @@
                .attr("font-size", "12px")
                .attr("fill", "red")
                .text(function(d){return d[0] + "," + d[1]});
-            var xAxis = d3.svg.axis();
-            xAxis.scale(xScale);
-            xAxis.orient("bottom");
-            svg.append("g").call(xAxis);
+            // 创建x数轴，注意v4与v3的方法不同
+            var xAxis = d3.axisBottom(xScale)
+                          .ticks(5);    // ticks(n) 设置刻度线的数量
+            // 在svg后追加append一个分组元素g，分组元素是不可见的
+            // 分组元素可用于包含其它元素，让代码看起来更整齐
+            // 分组元素可以对整个分组应用变换，影响到该分组中的所有元素
+            // 创分组元素后，直接在这个元素上调用call()方法
+            // d3的call()方法会取得传递过来的元素，然后交给其它函数
+            // 在本例中是把g元素传递给call()，接着call()又传递给xAxis函数，也就是要在g中生成数轴
+            // 通常把数轴的生成放在脚本底部，以保证数轴能显示在最上层。
+            svg.append("g")
+               .attr("class", "axis")   // 给数轴指定一个"axis"类，以便修整数轴样式
+               .attr("transform", "translate(0," + (h - padding) + ")") // 将数轴平移translate()到svg底部
+               .call(xAxis);
+            // y轴
+            var yAxis = d3.axisLeft(yScale)   // 创建y数轴
+                          .ticks(5)
+                          .tickFormat(d3.format(".1%"));    // 指定刻度线的数据格式为 d3.format(".1%") 即带%的1位小数
+            svg.append("g")
+               .attr("class", "axis")
+               .attr("transform", "translate(" + padding*3 + ",0)")
+               .call(yAxis);
+
         </script>
     </body>
 </html>
