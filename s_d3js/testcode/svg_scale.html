@@ -27,7 +27,7 @@
             坐标轴只是比例尺的一种形象表示，与比例尺是两样东西。</br>
             比例尺包括<strong>输入值域</strong>和<strong>输出范围</strong>。
         </p>
-        <h1>示例</h1>
+        <h2>线性比例尺,d3.scaleLinear()</h2>
         <div class="example"></div>
         <script type="text/javascript">
             // 创建SVG
@@ -107,6 +107,62 @@
                .attr("class", "axis")
                .attr("transform", "translate(" + padding*3 + ",0)")
                .call(yAxis);
+
+        </script>
+        <h2>序数比例尺,d3.scaleOrdinal()</h2>
+        <p>
+            序数比例尺，用于处理序数标签的数轴。d3.scaleOrdinal()方法建立序数比例尺。
+        </p>
+        <pre>
+            // 详见 https://github.com/d3/d3-scale#scaleOrdinal
+            d3.scaleOrdianl()  // 序数比例尺
+            d3.scaleBand()     // 线段比例尺
+                band.domain()   // 输入值域
+                band.range()    // 输出范围
+                band.rangeRound()    // 输出范围舍入，效果等于band.range().round(true)
+                band.paddingInner()  // 指定每个范围区间之间的距离
+                band.paddingOuter()  // 指定与左右两边的svg边框距离
+                band.bandwidth()     // 返回每个范围的宽度
+                band.step()          // 返回两个范围之间的距离，即bandwidth()+paddingInner()
+        </pre>
+        <div class="example_ordinal"></div>
+        <script type="text/javascript">
+            // 示例数组
+            var dataset = [5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+                           11, 12, 15, 20, 18, 17, 16, 18, 23, 25];
+            
+            // 定义svg
+            var w = 600;
+            var h = 250;
+            var barPadding = 1;
+
+            // 创建svg
+            var svg = d3.select("body div.example_ordinal")
+                        .append("svg")
+                        .attr("width", w)
+                        .attr("height", h);
+
+            // 创建序数比例尺
+            var xScale = d3.scaleBand() // scaleBand() 线段比例尺
+                           .domain(d3.range(dataset.length))
+                           .rangeRound([0, w], 10)  // 计算0,w可以均分为几档，然后按此设置比例尺的范围。,0.2为指定档间距。
+                           .paddingOuter(40)    // 设置svg图板的内边距
+                           .paddingInner(0.05);    // 设置每个条之间的间距，值域为[0, 1]
+                        //    .padding(40);
+            // 创建y轴比例尺，非序数比例尺
+            var yScale = d3.scaleLinear()
+                           .domain([0, d3.max(dataset)])
+                           .range([h, 0]);
+
+            // 创建条形图
+            svg.selectAll("rect")
+               .data(dataset)
+               .enter()
+               .append("rect")
+               .attr("x", function(d, i){return xScale(i)})
+               .attr("y", function(d, i){return yScale(d)})
+               .attr("width", xScale.bandwidth())
+               .attr("height", function(d, i){return h - yScale(d);});
 
         </script>
     </body>

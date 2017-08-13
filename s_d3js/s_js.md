@@ -16,6 +16,7 @@ window; // 在浏览器中是一个顶级对象，包含所有JS中能直接访�
 .append("div").enter();   // 如果没有div标签，则添加一个空的div，并传递给下个方法
 
 d3.format(".1%")   // 将数字格式化为 100.0%  的样式
+d3.range(10)       // 生成从0开始，到10结束的数组
 ```
 
 ## 数组操作
@@ -44,8 +45,10 @@ d3.scalePow()     // 幂比例尺，适合值以指数级变化的数据集。
 d3.scaleLog()     // 对数比例尺
 d3.scaleQuantize()   // 输出范围为独立的值的线性比例尺，适合想把数据分类的情况。
 d3.scaleQuantile()   // 与quantize类似，输入值域是独立值，适合已经对数据分类的情况。
-d3.scaleOrdinal()    // 使用非定量值（如类名）作为输出的序数比例尺，非常适合比较苹果和桔子
-d3.scale
+d3.scaleOrdinal()    // 使用非定量值（如类名）作为输出的序数比例尺，非常适合比较苹果和桔子, 支持范围分档(banding)，使用离散范围值。可以是数值，也可以不是。映射范围是，可以使用range()，也可以使用rangeBands()，后者接收一个最小值和最大值，然后根据输入值域的长度自动将其切分成相等的块或档。
+d3.scaleOrdina([start, end], banding)   // start,end 指定范围，banding指定档间距,范围*banding，即为指定的宽度。
+d3.scaleOrdinal().domain([<start>, <end>]).range([<start>, <end>], <banding>)  // 创建一个序数比例尺。v4取消了rangeRoundBands()和rangeBands()
+
 ```
 
 ## 数轴
@@ -53,6 +56,7 @@ d3.scale
 d3.svg.axis().scale(xScale).orient("bottom")      // v3 可以创建通用的数轴函数
 d3.axisBottom(xScale)    // v4，创建x数轴
 d3.axisBottom(xScale).ticks(5)   // 设置刻度线的数为5，d3会自动做出一定调整。
+
 
 ```
 ## 分组元素g与call()方法
