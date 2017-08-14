@@ -4,6 +4,16 @@
 .attr("transform", "translate(x,y)")    
 ```
 
+## 动态交互
+## .transition(), 过渡
+```
+d3.selection().on("event", function(){
+    // 重绘代码
+    .transition()   // 添加过渡动画
+    .duration(1000) // 添加过渡动画时间，1000毫秒
+    .ease()         // 控制动画品质，必须放在.attr()前
+})
+```
 
 ## 常用命令
 ```
