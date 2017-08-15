@@ -102,16 +102,20 @@ class myamap(object):
         gurl = quote(gurl, safe='/:?&=')
         tmp = json.loads(request.urlopen(request.Request(gurl)).read())
         result = []
-        for i in tmp['pois']:
-            result.append({
-                'name':i['name'],
-                'type':i['type'],
-                'typecode':i['typecode'],
-                'address':i['address'],
-                'location':i['location'],
-                'tel':i['tel'],
-                'distance':i['distance']
-            })
+for i in tmp['pois']:
+    result.append({
+        'name':i['name'],
+        'type':i['type'],
+        'typecode':i['typecode'],
+        'address':i['address'],
+        'location':{
+            'type':'Point',
+            'coordinates':[float(d) for d in i['location'].split(',')],
+        },
+        'tel':i['tel'],
+        'distance':i['distance']
+        var dataset =  
+    })
         return result
 
     def yuntu_createmap(self, tablename='myaddress'):
