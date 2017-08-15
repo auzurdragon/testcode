@@ -4,6 +4,10 @@
 .attr("transform", "translate(x,y)")    
 ```
 
+## d3.select() 与 d3.selectAll()
+select()选择集合只返回第一个元素，selectAll()选择所有的元素
+
+
 ## 动态交互
 ## .transition(), 过渡
 ```
@@ -14,6 +18,7 @@ d3.selection().on("event", function(){
     .ease()         // 控制动画品质，必须放在.attr()前
 })
 ```
+## 
 
 ## 常用命令
 ```
