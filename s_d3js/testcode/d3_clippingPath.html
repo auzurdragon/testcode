@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <title>D3JS:剪切路径(clipping: path)</title>
         <script type="text/javascript" src="../d3/d3.js"></script>
+        <link href="../../s_bootstrap/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     </head>
     <body>
         <h1>SVG中的剪切路径(clipping: path)</h1>
@@ -12,17 +13,19 @@
             把蒙版应用到某个元素时，只有落在该蒙版图形内部的像素才会显示。</br>
             与g元素相似，clipPath本身也不可见，但它可以包含可见的元素。</br>
             剪切路径的定义样式
-            <pre>
-                <clipPath id="chart-area">
-                    <rect x="30" y="30" width="400" height="250"></rect>
-                </clipPath>
-            </pre>
+<pre>
+&lt;clipPath id="chart-area"&gt;
+    &lt;rect x="30" y="30" width="400" height="250"&gt;&lt;/rect&gt;
+&lt;/clipPath&gt;
+</pre>
         </p>
         <p>
             使用剪切路径的步骤：</br>
-            1. 定义clipPath并给它一个ID;</br>
-            2. 在这个clipPath中放一个可见的元素，通常是一个rect，但也可以包含circle等; </br>
-            3. 在需要使用蒙版的元素上添加一个对clipPath的引用。
+            <ol>
+                <li>定义clipPath并给它一个ID;</li>
+                <li>在这个clipPath中放一个可见的元素，通常是一个rect，但也可以包含circle等;</li>
+                <li>在需要使用蒙版的元素上添加一个对clipPath的引用。</li>
+            </ol>
         </p>
         <div class="example" id ="p1"></div>
         <script type="text/javascript">
