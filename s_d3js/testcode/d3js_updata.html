@@ -28,7 +28,7 @@
             // 创建对添加数据按钮的监听
             d3.select("body div.button button#btnadd")
               .on("click", function(){
-                  // 向数据集中添加一个值
+                  // 向数据集中添加一个值，使用dataset.push()方法
                   var newNumber = Math.floor(Math.random() * maxValue);
                   dataset.push(newNumber);
                   // 修改x轴比例尺的输入值域
@@ -65,7 +65,24 @@
               .on("click", function(){
                 // 从dataset中删除数据
                 dataset.shift();    // shift()从头部删除一个值。
-
+                // 退出删除掉的元素，使用exit()方法
+                var bars = svg.selectAll("rect").data(dataset);
+                bars.exit()
+                    .transition()
+                    .duration(500)
+                    .attr("x", function(d, i){return -xScale(i);})  // 使用-xScale,退出时的动画为向左平移并退出。
+                    .remove();  // remove()是一种特殊的过渡方法，过渡完成后从DOM中永远地删除元素。
+                // 重绘原条形
+                bars.transition()
+                    .duration(500)
+                    .attr("x", function(d, i){return xScale(i);})
+                    .attr("width", xScale.bandwidth());
+                // 修改x轴
+                xScale.domain(d3.range(dataset.length));
+                svg.select(".x.axis")
+                   .transition()
+                   .duration(500)
+                   .call(xAxis);
               });
             // 创建随机数据集
             var maxValue = 300;
