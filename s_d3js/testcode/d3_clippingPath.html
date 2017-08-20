@@ -43,12 +43,14 @@
                            .range([0, 500]);
             var yScale = d3.scaleLinear()
                            .domain([0, 250])
-                           .range([0, 250]);
+                           .range([(h-padding *2 ), padding * 2]);
             // 画个圆，边缘超出坐标轴范围, 使用g元素包装，便于引用clipPath
             svg.append("g")
+               .attr("id", "circles")
+               .attr("clip-path", "url(#chart-area)")
                .append("circle")
-               .attr("cx", 300)
-               .attr("cy", 150)
+               .attr("cx", xScale(400))
+               .attr("cy", yScale(220))
                .attr("r", 50)
                .attr("fill", "grey");
             // 绘制坐标轴
@@ -60,16 +62,16 @@
                .call(xAxis);
             svg.append("g")
                .attr("class", "axis")
-               .attr("transform", "translate(" + padding*2 +", " + (h - 250 - padding) +")")
+               .attr("transform", "translate(" + padding*2 +", " + (padding) +")")
                .call(yAxis);
             // 绘制剪切路径
             svg.append("clipPath")
                .attr("id", "chart-area")
                .append("rect")
                .attr("x", padding * 2)
-               .attr("y", h - 250 - padding)
-               .attr("width", 500)
-               .attr("height", 250);
+               .attr("y", padding)
+               .attr("width", w - padding * 3 )
+               .attr("height", h - padding * 2);
             d3.select("circle").attr("clip-path", "#chart-area");
         </script>
     </body>
