@@ -50,6 +50,29 @@
                     {source: 8, target: 9}
                 ]
         };
+        var w = 300;
+        var h = 300;
+        // 创建svg
+        var svg = d3.select("body div.example")
+                    .append("svg")
+                    .attr("width", w)
+                    .attr("height", h);
+        // 初始化force
+        var force = d3.forceSimulation()
+                      .nodes(dataset.nodes);
+        var edges = svg.selectAll("line")
+                       .data(dataset.edges)
+                       .enter()
+                       .append("line")
+                       .style("stroke", "#ccc")
+                       .style("stroke-width", 1);
+        var nodes = svg.selectAll("circle")
+                       .data(dataset.nodes)
+                       .enter()
+                       .append("circle")
+                       .attr("r", 10)
+                       .style("fill", "black")
+                       .call(force.drag);
         </script>
     </body>
 </html>
