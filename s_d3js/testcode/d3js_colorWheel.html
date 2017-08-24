@@ -36,6 +36,11 @@
             var arc = d3.arc()
                         .outerRadius(outerRadius)
                         .innerRadius(innerRadius);
+            // 圆环中心显示区域
+            svg.append("text")
+                .attr("class", "wheelTitle")
+                .attr("x", w/2)
+                .attr("y", h/2);
             // 绘制图形 
             var arcs = svg.selectAll("g.arc")
                           .data(pie(wheel))
@@ -45,7 +50,14 @@
                           .attr("transform", "translate("+ w/2 +", "+ h/2 +")");
             arcs.append("path")
                 .attr("fill", function(d, i) {return d3.hsl(i*10,1,0.5);})
-                .attr("d", arc);
+                .attr("d", arc)
+                .append("title")
+                .text(function(d, i){return 'H:' + i*10 + ', S: 1, L: 0.5 ';});
+            d3.selectAll("path")
+                .on('click',function(this){
+                    svg.select("text.wheelTitle")
+                        .text("test");
+                });
         </script>
     </body>
 </html>

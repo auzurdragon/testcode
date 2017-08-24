@@ -79,7 +79,11 @@ var arc = d3.arc()
                 .attr("fill", function(d, i){return color(d.data / sumValue);})
                 .attr("d", arc)
                 .append("title")
-                .text(function(d, i){return "this area is : " + d.data;});
+                .text(function(d, i){return "this area is : " + d.data;})
+                .on('click', function(d){
+                    d3.select(this)
+                });
+            
         </script>
     </body>
 </html>

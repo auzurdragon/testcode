@@ -213,3 +213,36 @@ db.iTRO_publishmessage.insert({
     'touser':[],          // array,string,预留字段，发布对象的用户id
     'toarea':[],          // array,string,预留字段，发布地区
 })
+
+
+// 在数组内嵌文档中插入一个k:v
+// 创建测试数据
+db.testcoll.insert({ 
+    "_id" : ObjectId("599d20e571e472580cd057b3"), 
+    "prolist" : [
+        {
+            "productid" : "599ab94171e472c3645eaa46", 
+            "seriesid" : "59965e5b71e472b398c5336d", 
+            "size" : "S", 
+            "color" : "红色", 
+            "num" : NumberInt(1), 
+            "price" : NumberInt(101), 
+            "seriesname" : "蓝心体验系列"
+        }, 
+        {
+            "productid" : "599ab94171e472c3645eaa46", 
+            "seriesid" : "59965e0371e472b398c5336b", 
+            "size" : "S", 
+            "color" : "红色", 
+            "num" : NumberInt(1), 
+            "price" : NumberInt(101), 
+            "seriesname" : "test"
+        }
+    ]
+})
+
+// 在prolist数组中，seriesid:'59965e5b71e472b398c5336d'的内嵌文档，插入teststr:5336d
+db.fx_order.update(
+    {'prolist.seriesid':'59965e5b71e472b398c5336d'},
+    {$set:{'prolist.$.teststr':'5336d'}}
+)
