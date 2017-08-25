@@ -1,16 +1,6 @@
 # 阿里百川无线开放平台(http://baichuan.taobao.com/)
 # 账号:auzurdragon
 
-# 正式环境HTTP请求地址
-URL_HTTP = 'http://gw.api.taobao.com/router/rest'
-
-# 正式环境HTTPS请求地址
-URL_HTTPS = 'https://eco.taobao.com/router/rest'
-
-# 身份参数
-APP_KEY = '24598079'    # appKey，见控制台-应用管理
-APP_SECRET = '8f8a525b7396fbd40c6c4aa9d7f37151' # 同上
-
 # sign签名方法
 """
     对所有API请求参数（包括公共参数和业务参数，但除去sign参数和byte[]类型的参数），根据参数名称的ASCII码表的顺序排序。如：foo=1, bar=2, foo_bar=3, foobar=4排序后的顺序是bar=2, foo=1, foo_bar=3, foobar=4。
@@ -20,19 +10,42 @@ APP_SECRET = '8f8a525b7396fbd40c6c4aa9d7f37151' # 同上
 """
 
 # 公共请求参数
-METHOD = ''         # 是，API接口名称
-TARGET_APP_KEY = '' # 否，被调用的目标AppKey,仅当被调用的API为第三方ISV提供时有效。
-SIGN_METHOD = ''    # 是，签名的摘要算法，可选值：hmac, md5
-SIGN = ''           # 是，API输入参数签名结果
-SESSION = ''        # 否，用户登录授权成功后，TOP颁发给应用的授权信息。
-TIMESTAMP = ''      # 是, 时间，格式为yyyy-MM-dd HH:mm:ss，时区为GMT+8
-FORMAT = 'json'     # 否，响应格式，默认为xml，可选值：xml, json
-V = ''              # 是, API协议版本，可选值：2.0
-PARTNER_ID = ''     # 否，合作伙伴身份标识。
-SIMPLIFY = False    # 否，boolean, 是否采用精简JSON返回格式，仅当format=json有效，默认值false
-
+PUBLIC_PARAMETERS = {
+    APP_KEY = '24598079'    # appKey，见控制台-应用管理
+    APP_SECRET = '8f8a525b7396fbd40c6c4aa9d7f37151' # 同上
+    URL_HTTP = 'http://gw.api.taobao.com/router/rest'   # 正式环境HTTP请求地址
+    URL_HTTPS = 'https://eco.taobao.com/router/rest'    # 正式环境HTTPS请求地址
+    METHOD = ''         # 是，API接口名称
+    TARGET_APP_KEY = '' # 否，被调用的目标AppKey,仅当被调用的API为第三方ISV提供时有效。
+    SIGN_METHOD = ''    # 是，签名的摘要算法，可选值：hmac, md5
+    SIGN = ''           # 是，API输入参数签名结果
+    SESSION = ''        # 否，用户登录授权成功后，TOP颁发给应用的授权信息。
+    TIMESTAMP = ''      # 是, 时间，格式为yyyy-MM-dd HH:mm:ss，时区为GMT+8
+    FORMAT = 'json'     # 否，响应格式，默认为xml，可选值：xml, json
+    V = ''              # 是, API协议版本，可选值：2.0
+    PARTNER_ID = ''     # 否，合作伙伴身份标识。
+    SIMPLIFY = False    # 否，boolean, 是否采用精简JSON返回格式，仅当format=json有效，默认值false
+}
 # taobao.itemcats.get   获取后台供卖家发布商品的标准商品类目
-# 请求参数
+# 接口说明(http://open.taobao.com/docs/api.htm?spm=a219a.7386797.0.0.6cMDin&source=search&apiId=122)
+# 收费接口，需要高级权限，
+
+def tb.itemcats.get():
+    """
+        类目API，淘宝类目ID查询
+    """
+    PUBLIC_PARAMETERS['METHOD'] = 'method=taobao.itemcats.get'
+    PUBLIC_PARAMETERS['TIMESTAMP'] = '2017-08-25+11:59:A29'
+
+# taobao.tbk.item.get (淘宝客商品查询)
+# 接口说明(http://open.taobao.com/doc2/apiDetail.htm?apiId=24515&scopeId=11483)
+
+PUBLIC_PARAMETERS['METHOD'] = 'method=taobao.tbk.item.get'
+PUBLIC_PARAMETERS['TIMESTAMP'] = '2017-08-25+11:59:A29'
+
+
+
+
 CIDS = (18957, 19562)       # 任选,商品所属类目ID列表, 用','分隔, cids和parent_cid至少传一个
 FIELDS = (                  # 可选,需要返回的字段列表, 见itemCat, 默认返回cid,parent_cid,name,is_parent
     'cid,'                  # 
@@ -67,24 +80,6 @@ gurl = ('%s?sign=%s'
 )
 
 
-# 示例
-# gurl = ('http://gw.api.taobao.com/router/rest?'
-#         'sign=0FF06F841945CA456996FCCDF9394CFD&'
-#         'timestamp=2017-08-24+17%3A54%3A37&'
-#         'v=2.0&'
-#         'app_key=12129701&'
-#         'method=taobao.itemcats.get&'
-#         'partner_id=top-apitools&'
-#         'format=json&'
-#         'parent_cid=0&'
-#         'force_sensitive_param_fuzzy=true&'
-#         'fields=cid%2Cparent_cid%2Cname%2Cis_parent'
-# )
-gurl = (URL_HTTP
-        'sign='
-
-
-)
 
 # 响应参数
 last_modified,      # Date,最近修改时间
