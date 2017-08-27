@@ -25,6 +25,65 @@
             <li>.datum(), 将指定数据赋值给被选择的元素。</li>
             <p>d3.selectAll("p").datum(7),对选择集中的每一个p元素，都为其增加一个_data_属性，值为7。</p>
             <li>.data(), 将数据数组与选择集的元素结合</li>
+            <li>transfor属性，用于对元素申明一个或多个变换，每个变换定义由空格或,隔开。有效的的svg变换包括：旋转,缩放,移动,倾斜。
+                <a href="https://www.w3cplus.com/html5/svg-transformations.html" target="_blank">学习来源</a>
+            </li>
+                <ul>
+                    <li>matrix(a b c d e f), 可以在svg元素上添加多个变换, 不常使用</li>
+                    <li>translate(<tx> [<ty>]), 进行移动, tx为水平移动值, ty为垂直移动值</li>
+                    <li>scale(<sx> [<sy>]), 进行水平或垂直方向缩放, 默认sy等于sx</li>
+                    <li>skewX(<skew-angle>), skewY(<skew-angle>), 沿指定轴倾斜</li>
+                    <li>rotate(<rotate-angle> [<cx> <cy>]), 对于给定的点和旋转角度进行旋转, 只能声明degress单位. 可选的 cx,cy 代表无单位的旋转中心。</li>
+                </ul>
+            <li>
+                path 标签,用于定义路径。示例：
+                <code> &lt;path d = "M250 150 L153 350 L350 350 Z " /&gt; </code></br>
+                d表示路径数据, 从250,150开始，绘制直线到153,350, 再到350,350, 关闭路径. ""内的字母含义如下：
+                <ul>
+                    <li>M = moveto, 移动画笔的位置, 不画线, <code>M x y  绝对位置, m dx dy  相对位置</code></li>
+                    <li>L = lineto, 画线段, <code>L x y  向(x,y)点画一条线段</code></li>
+                    <li>H = horizontal lineto, 画水平线, <code>H y</code></li>
+                    <li>V = vertical lineto, 画垂直线： <code>V x</code></li>
+                    <li>C = curveto, 三次贝赛尔曲线: <code>C x1 y1, x2 y2, x y  (x1,y1)是起点, (x2,y2)是控制点, (x,y)是终点</code></li>
+                    <li>S = smooth curveto, 当曲线的某个控制点是另一侧控制点的对称，可以使用S简写C命令. 
+                        <ul>
+                            <li>如果S命令跟在一个C命令后，则S的第一个控制点为前一个控制点的对称点(与前个点一致,斜率不变)。</li>
+                            <li>如果S命令单独使用, 则S的两个控制点会被假设为同一个点。</li>
+                            <pre>S x2 y2, x y</pre>
+                        </ul>
+                    </li>
+                    <li>
+                        Q = quadratic belzier curve, 二次方程式,贝赛尔曲线, 只需要一个控制点和终点坐标。</br>
+                        <em>贝赛尔曲线, 是依据几个位置任意的点坐标, 绘制出一条光滑曲线. 二次贝赛尔曲线由三个点确定, 三次需要四个点.</em></br>
+                        <code>二次贝赛尔曲线路径由给定点P0, P1, P2 的函数B(t): B(t) = (1-t)^2 P0 + 2(1-t)P1 + t^2P2, t范围[0,1]。</code>
+                        <pre>Q x1 y1, x y</pre>
+                    </li>
+                    <li>T = smooth quadratic Belzier curveto, Q命令的简写, 通过前一个控制点, 推断出一个新的控制点
+                        <ul>
+                            <li>T命令前必须是一个Q命令, 或者是另一个T命令</li>
+                            <li>T命令单独使用时, 控制点会被认为和终点是同一个点, 画成直线</li>
+                        </ul>
+                    </li>
+                    <li>
+                        A = elliptical Arc, 绘制弧线, 弧线可以理解为圆形或椭圆形的一部分. 在已知椭圆形的长轴和短轴半径时, 连接两个点可以有多种弧形。</br>
+                        <a href="https://developer.mozilla.org/zh-CN/docs/Web/SVG/Tutorial/Paths" target="_blank">参考来源</a>
+                        <pre>A rx ry, x-axis-rotation, large-arc-flag, sweep-flag, x y</pre>
+                        <ul>
+                            <li>rx和ry是x轴和y轴半径</li>
+                            <li>x-axis-rotation, 表示弧线的旋转情况</li>
+                            <li>large-arc-flag, 表示角度大小, 决定弧线是大小还是小于180度, 0为小角度, 1为大角度</li>
+                            <li>sweep-flag, 弧线的方向, 0表示从起点到终点沿逆时针画, 1表示从起点到终点沿顺时针画 </li>
+                            <li>x y 是指定弧线的终点</li>
+                        </ul>
+                    </li>
+                    <li>Z = closepath 路径闭合</li>
+                    <strong>注: 以上所有命令均允许小写字母, 表示相对定位。大写字母表示绝对定位。</strong>
+                </ul>
+            </li>
+            <li>圆形的三角函数方程表达：以(a,b)为圆心, r为半径, t为角度。
+                <pre>x = a + r*cos(t)    y = b + r*sin(t)</pre>
+            </li>
+            <li>弧度(以PI来表示的角度), 1 PI = 180度, 2 PI = 360度, 1 度 = PI/180</li>
             <li>annulus, ['ænjʊləs] , n. 环面</li>
         </ul>
         <div class="example"></div>
@@ -75,30 +134,41 @@
                 speed = 4,
                 start = Date.now();
             // 创建svg元素
-            var svg = d3.select("body div.example").append("svg")
-                    .attr("width", width)
-                    .attr("height", height)
-                .append("g")
-                    .attr("transform", "translate(" + width / 2 + ", " + height /2 + ")scale(.55)")
+            var svg = d3.select("body div.example")
+                .append("svg")   // 在<div class="example">标签中追加svg标签
+                    .attr("width", width)   // 设置svg宽度
+                    .attr("height", height) // 设置svg高度
+                .append("g")                // 追加一个空元素
+                    .attr("transform",      // 将元素位置进行移动
+                          "translate(" + width / 2 + ", " + height /2 + ")scale(.55)")
                 .append("g");
-            var frame = svg.append("g")
+            
+            var frame = svg.append("g")     // 定义frame对象
                     .datum({radius: Infinity});
+            
+            // 创建外环的内齿圈
             frame.append("g")
                     .attr("class", "annulus")
                     .datum({teeth:80, radius:-radius * 5, annulus:true})
                 .append("path")
                     .attr("d", gear);
+            
+            // 创建中间的sun齿轮
             frame.append("g")
                     .attr("class", "sun")
                     .datum({teeth:16, radius:radius})
                 .append("path")
                     .attr("d", gear);
+            
+            // 创建上方的planet齿轮
             frame.append("g")
                     .attr("class", "planet")
                     .attr("transform", "translate(0, -"+ radius * 3 + ")")
                     .datum({teeth: 32, radius: -radius * 2})
                 .append("path")
                     .attr("d", gear);
+            
+            // 创建左下角的planet齿轮
             frame.append("g")
                     .attr("class", "planet")
                     .attr("transform", "translate(" + -radius * 3 * x + ", " + -radius * 3 * y + ")")
@@ -106,20 +176,28 @@
                 .append("path")
                     .attr("d", gear);
             
+            // 创建右下角的planet齿轮
+            frame.append("g")
+                    .attr("class", "planet")
+                    .attr("transform", "translate(" + radius * 3 * x + "," + -radius * 3 * y + ")")
+                    .datum({teeth: 32, radius: -radius * 2})
+                .append("path")
+                    .attr("d", gear);
+            
             function gear(d) {
-                var n = d.teeth,
-                    r2 = Math.abs(d.radius),
-                    r0 = r2 - 8,
-                    r1 = r2 + 8,
-                    r3 = d.annulus ? (r3 = r0, r0 = r1, r1 = r3, r2 + 20) : 20,
-                    da = Math.PI / n,
-                    a0 = -Math.PI / 2 + (d.annulus ? Math.PI / n : 0),
+                var n = d.teeth,                // n 为齿数
+                    r2 = Math.abs(d.radius),    // 圆半径
+                    r0 = r2 - 8,                // 内齿半径
+                    r1 = r2 + 8,                // 外齿半径
+                    r3 = d.annulus ? (r3 = r0, r0 = r1, r1 = r3, r2 + 20) : 20,     // 如果是外环时, 重新定义各个半径, 否则
+                    da = Math.PI / n,           // 每个齿轮的角度, 因为齿轮之间有空隙, 所以是 180度/n
+                    a0 = -Math.PI / 2 + (d.annulus ? Math.PI / n : 0),  // 指定绘制path时的的起始位置, 90度
                     i = -1,
-                    path = ["M", r0 * Math.cos(a0), ",", r0 * Math.sin(a0)];
-                while ( ++i < n) path.push(
-                        "A", r0, ",", r0, "0 0,1", r0 * Math.cos(a0 += da), ",", r0 * Math.sin(a0),
+                    path = ["M", r0 * Math.cos(a0), ",", r0 * Math.sin(a0)];                            // 指定path起始位置为 90度点
+                while ( ++i < n) path.push(                                                             // 给path中加入路径点
+                        "A", r0, ",", r0, " 0 0,1", r0 * Math.cos(a0 += da), ",", r0 * Math.sin(a0),    // Ar0, r0 0 0,1
                         "L", r2 * Math.cos(a0), ",", r2 * Math.sin(a0),
-                        "L", r1 * Math.cos(a0 += da / 3), ",", r1 * Math.sin(a0),
+                        "L", r1 * Math.cos(a0 += da/3), ",", r1 * Math.sin(a0),
                         "A", r1, ",", r1, " 0 0,1 ", r1 * Math.cos(a0 += da / 3), ",", r1 * Math.sin(a0),
                         "L", r2 * Math.cos(a0 += da / 3), ",", r2 * Math.sin(a0),
                         "L", r0 * Math.cos(a0), ",", r0 * Math.sin(a0));
@@ -127,6 +205,7 @@
                     return path.join("");
             }
 
+            // 创建动画队列
             d3.timer(function() {
                 var angle = (Date.now() - start) * speed,
                     transform = function(d) { return "rotate(" + angle / d.radius + ")"; };
