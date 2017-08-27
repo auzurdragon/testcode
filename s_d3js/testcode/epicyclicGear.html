@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>epicyclicGear,周转齿轮</title>
+        <!-- <script src="https://d3js.org/d3.v4.min.js"></script> -->
+        <script type="text/javascript" src="../d3/d3.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- 引入 Bootstrap -->
+        <link href="../../s_bootstrap/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+        <!-- HTML5 Shim 和 Respond.js 用于让IE8支持 HTML5 元素和媒体查询 -->
+        <!-- 注意：如果通过 file:// 引入Respond.js文件，则该文件无效 -->
+        <!-- [if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https//oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+            <![endif]
+            -->
+    </head>
+    <body>
+        <h1>D3实例：周转齿轮</h1>
+        <a href='https://github.com/d3/d3/wiki/Gallery' target="_blank">来源D3官网</a></br>
+        <a href='https://bl.ocks.org/mbostock/1353700' target="_blank">Epicyclic Gearing实例源码</a></br>
+        <h3>笔记</h3>
+        <ul>
+            <li>.datum(), 将指定数据赋值给被选择的元素。</li>
+            <p>d3.selectAll("p").datum(7),对选择集中的每一个p元素，都为其增加一个_data_属性，值为7。</p>
+            <li>.data(), 将数据数组与选择集的元素结合</li>
+            <li>annulus, ['ænjʊləs] , n. 环面</li>
+        </ul>
+        <div class="example"></div>
+        
+        <style>
+            body {
+                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+                width : 960px;
+                height: 500px;
+                position: relative;
+            }
+            
+            form {
+                position: absolute;
+                top: 1em;
+                left: 1em;
+            }
+
+            path {
+                fill-rule: evenodd;
+                stroke: #333;
+                stroke-width: 2px;
+            }
+
+            .sun path {
+                fill: #6baed6;
+            }
+
+            .planet path {
+                fill: #9ecae1;
+            }
+
+            .annulus path {
+                fill: #c6dbef;
+            }
+        </style>
+
+
+
+        <script type="text/javascript">
+            // 我的代码
+            var width = 960,
+                height = 500,
+                radius = 80,
+                x = Math.sin(2 * Math.PI / 3),
+                y = Math.cos(2 * Math.PI /3);
+            var offset = 0,
+                speed = 4,
+                start = Date.now();
+            // 创建svg元素
+            var svg = d3.select("body div.example").append("svg")
+                    .attr("width", width)
+                    .attr("height", height)
+                .append("g")
+                    .attr("transform", "translate(" + width / 2 + ", " + height /2 + ")scale(.55)")
+                .append("g");
+            var frame = svg.append("g")
+                    .datum({radius: Infinity});
+            frame.append("g")
+                    .attr("class", "annulus")
+                    .datum({teeth:80, radius:-radius * 5, annulus:true})
+                .append("path")
+                    .attr("d", gear);
+            frame.append("g")
+                    .attr("class", "sun")
+                    .datum({teeth:16, radius:radius})
+                .append("path")
+                    .attr("d", gear);
+            frame.append("g")
+                    .attr("class", "planet")
+                    .attr("transform", "translate(0, -"+ radius * 3 + ")")
+                    .datum({teeth: 32, radius: -radius * 2})
+                .append("path")
+                    .attr("d", gear);
+            frame.append("g")
+                    .attr("class", "planet")
+                    .attr("transform", "translate(" + -radius * 3 * x + ", " + -radius * 3 * y + ")")
+                    .datum({teeth: 32, radius: -radius * 2})
+                .append("path")
+                    .attr("d", gear);
+            
+            function gear(d) {
+                var n = d.teeth,
+                    r2 = Math.abs(d.radius),
+                    r0 = r2 - 8,
+                    r1 = r2 + 8,
+                    r3 = d.annulus ? (r3 = r0, r0 = r1, r1 = r3, r2 + 20) : 20,
+                    da = Math.PI / n,
+                    a0 = -Math.PI / 2 + (d.annulus ? Math.PI / n : 0),
+                    i = -1,
+                    path = ["M", r0 * Math.cos(a0), ",", r0 * Math.sin(a0)];
+                while ( ++i < n) path.push(
+                        "A", r0, ",", r0, "0 0,1", r0 * Math.cos(a0 += da), ",", r0 * Math.sin(a0),
+                        "L", r2 * Math.cos(a0), ",", r2 * Math.sin(a0),
+                        "L", r1 * Math.cos(a0 += da / 3), ",", r1 * Math.sin(a0),
+                        "A", r1, ",", r1, " 0 0,1 ", r1 * Math.cos(a0 += da / 3), ",", r1 * Math.sin(a0),
+                        "L", r2 * Math.cos(a0 += da / 3), ",", r2 * Math.sin(a0),
+                        "L", r0 * Math.cos(a0), ",", r0 * Math.sin(a0));
+                    path.push("M0,", -r3, "A", r3, ",", r3, " 0 0,0 0,", r3, "A", r3, ",", r3, " 0 0,0 0,", -r3, "Z");
+                    return path.join("");
+            }
+
+            d3.timer(function() {
+                var angle = (Date.now() - start) * speed,
+                    transform = function(d) { return "rotate(" + angle / d.radius + ")"; };
+                frame.selectAll("path").attr("transform", transform);
+                frame.attr("transform", transform); // frame of reference
+            });
+        </script>
+    </body>
+</html>
