@@ -17,7 +17,7 @@ class TopAPI(object):
             'sign_method': 'md5',     # 是，签名的摘要算法，可选值：hmac, md5
             # 'session': '',          # 否，用户登录授权成功后，TOP颁发给应用的授权信息。
             'timestamp': '',          # 是, 时间，格式为yyyy-MM-dd HH:mm:ss，时区为GMT+8
-            'format': 'json',         # 否，响应格式，默认为xml，可选值：xml, json
+             'format': 'json',         # 否，响应格式，默认为xml，可选值：xml, json
             'v': '2.0',               # 是, API协议版本，可选值：2.0
             # 'partner_id': '',       # 否，合作伙伴身份标识。
             # 'simplify': False,      # 否，boolean, 是否采用精简JSON返回格式，仅当format=json有效，默认值false
