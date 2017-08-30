@@ -40,124 +40,172 @@ class iTRO_redPacket(object):
             'COUser':'iTRO_User'
         }
         # 用于保存处理记录的列表
-        self.RESULT = []
+        self.result = {
+            # "keyname":{   # redis中的field
+            #   "rkey":,    # 与field相同
+            #   "redveid":, # 红包id
+            #   "getuid":,  # 获得红包的用户id
+            #   "val":,     # 获得的金额
+            #   "money":,   # 获得红包前的账号余额
+            #   "remain":,  # 获得红包后的账号余额
+            #   "msg":,     # 该记录处理的情况
+            # }
+        }
+        self.lognum = int(0)
         # 用于保存处理记录的文件夹
-        self.LOGPATH = 'E:/iTROLog/'
+        self.logpath = 'E:/iTROLog/'
 
-    def get_redLog(self):
-        """获得redis缓存中的key, 如果没有传入field, 则返回所有的key。否则按field返回指定的hkey值。"""
+    def do_redpacket(self):
+        """执行红包记录处理, 每次处理5000条, 则进行一次休眠，以降低压力"""
+        from time import sleep
+        stop = 0
+        for i in self.result:
+            self.get_userRemain(i)
+            self.to_userRemain(i)
+            self.to_redlog(i)
+            self.to_flowlog(i)
+            self.del_redlog(i)
+            stop += 1
+            if stop ==5000:
+                sleep(5)
+        self.to_logfile()
+
+
+    def get_redField(self):
+        """获得redis缓存中的field, 如果没有传入field, 则返回所有的key。否则按field返回指定的hkey值。"""
         from redis import Redis
         from json import loads
-        CONN = Redis(host=self.redis['HOST'], port=self.redis['PORT'], db=self.redis['DB'])
-        tmp = CONN.hgetall(self.redis['HKEY'])
-        for i in tmp:
-            self.RESULT.append(loads(tmp[i]))
+        conn = Redis(host=self.redis['HOST'], port=self.redis['PORT'], db=self.redis['DB'])
+        if conn.exists(self.redis["HKEY"]):
+            keys = conn.hkeys(self.redis["HKEY"])
+            self.result = self.result.fromkeys([i.decode() for i in keys])
+            self.lognum = len(self.result)
+        else:
+            print("%s is not exists" % (self.redis["HKEY"]))
+            return False
+        result True
+
+    def get_redValue(self, field):
+        """按field查询value"""
+        from redis import Redis
+        from json import loads
+        conn = Redis(host=self.redis['HOST'], port=self.redis['PORT'], db=self.redis['DB']) 
+        self.result[field] = loads(conn.hget(self.redis["HKEY"], field))
         return True
 
-    def get_userRemain(self, index):
-        """按userid从mongodb中获得用户的余额，每次只处理一条数据, index 为RESULT列表的索引，即处理第几条数据"""
+    def get_userRemain(self, field):
+        """按userid从mongodb中获得用户的余额，每次只处理一条数据, index 为result列表的索引，即处理第几条数据"""
         from pymongo import MongoClient
         from bson.objectid import ObjectId
-        CONN = MongoClient(host=self.mongo['HOST'], port=self.mongo['PORT'])
-        DB = CONN.get_database(self.mongo['DBUser'])
-        COLL = DB.get_collection(self.mongo['COUser'])
-        T = COLL.find_one({'_id':ObjectId(self.RESULT[index]['getuid'])}, {'_id':0, 'Money':1})
+        conn = MongoClient(host=self.mongo['HOST'], port=self.mongo['PORT'])
+        db = conn.get_database(self.mongo['DBUser'])
+        coll = db.get_collection(self.mongo['COUser'])
+        T = coll.find_one({'_id':ObjectId(self.result[field]['getuid'])}, {'_id':0, 'Money':1})
         if T:
-            self.RESULT[index]['msg'] = 'get remain'
-            self.RESULT[index]['money'] = T['Money']
-            self.RESULT[index]['remain'] = self.RESULT[index]['val'] + T['Money']
-            CONN.close()
+            self.result[field]['msg'] = 'get remain'
+            self.result[field]['money'] = T['Money']
+            self.result[field]['remain'] = self.result[field]['val'] + T['Money']
+            conn.close()
             return True
         else:
-            self.RESULT[index]['msg'] = 'get remain failed'
-            self.RESULT[index]['money'] = 0
-            self.RESULT[index]['remain'] = self.RESULT[index]['val']
-            CONN.close()
+            self.result[field]['msg'] = 'get remain failed'
+            self.result[field]['money'] = 0
+            self.result[field]['remain'] = self.result[field]['val']
+            self.to_errorlog(field)
+            conn.close()
             return False
 
 
-    def to_userRemain(self, index):
+    def to_userRemain(self, field):
         """
             按userid，将用户领取红包后的余额, 回写到mongodb.iTROdb.iTRO_User表中
         """
         from pymongo import MongoClient
         from bson.objectid import ObjectId
-        CONN = MongoClient(host=self.mongo['HOST'], port=self.mongo['PORT'])
-        DB = CONN.get_database(self.mongo['DBUser'])
-        COLL = DB.get_collection(self.mongo['COUser'])
-        tmp = COLL.update_one(
-            {'_id':ObjectId(self.RESULT[index]['getuid'])},
-            {'$set':{'Money':int(self.RESULT[index]['remain'])}}
+        conn = MongoClient(host=self.mongo['HOST'], port=self.mongo['PORT'])
+        db = conn.get_database(self.mongo['DBUser'])
+        coll = db.get_collection(self.mongo['COUser'])
+        tmp = coll.update_one(
+            {'_id':ObjectId(self.result[field]['getuid'])},
+            {'$set':{'Money':int(self.result[field]['remain'])}}
         )
-        CONN.close()
+        conn.close()
         if tmp.raw_result['updatedExisting']:
-            self.RESULT[index]['msg'] = 'update money'
+            self.result[field]['msg'] = 'update money'
             return True
         else:
-            self.RESULT[index]['msg'] = 'update money failed'
+            self.result[field]['msg'] = 'update money failed'
+            self.to_errorlog(field)
             return False
 
 
-    def to_redlog(self, index):
+    def to_redlog(self, field):
         """
             将记录写入 iTRO_SocialDb.iTRO_RedPacket
         """
         from pymongo import MongoClient
         from bson.objectid import ObjectId
         # 修改账号余额为领取红包后的余额, 即money+val
-        CONN = MongoClient(host=self.mongo['HOST'], port=self.mongo['PORT'])
-        DB = CONN.get_database(self.mongo['DBRed']) 
-        COLL = DB.get_collection(self.mongo['CORed'])
-        tmp = COLL.update_one(
-            filter = {'$or':[{'_id':ObjectId(self.RESULT[index]['redveid'])}, {'randomnum': self.RESULT[index]['redveid']}]},
-            update = {'$push':{'getuid':self.RESULT[index]['getuid'], 'getAmount':int(self.RESULT[index]['val'])}}
+        conn = MongoClient(host=self.mongo['HOST'], port=self.mongo['PORT'])
+        db = conn.get_database(self.mongo['DBRed']) 
+        coll = db.get_collection(self.mongo['CORed'])
+        tmp = coll.update_one(
+            filter = {'$or':[{'_id':ObjectId(self.result[field]['redveid'])}, {'randomnum': self.result[field]['redveid']}]},
+            update = {'$push':{'getuid':self.result[field]['getuid'], 'getAmount':int(self.result[field]['val'])}}
         )
         if tmp.raw_result['updatedExisting']:
-            self.RESULT[index]['msg'] = 'write RedPacket'
-            CONN.close()
+            self.result[field]['msg'] = 'write RedPacket'
+            conn.close()
             return True
         else:
-            self.RESULT[index]['msg'] = 'write redpacket failed'
-            CONN.close()
+            self.result[field]['msg'] = 'write redpacket failed'
+            self.to_errorlog(field)
+            conn.close()
             return False
     
-    def to_flowlog(self, index):
+    def to_flowlog(self, field):
         """
             访问iTROLogdb.iTRO_FlowLog, 写入金额增加记录
         """
         from pymongo import MongoClient
         from time import time
-        CONN = MongoClient(host=self.mongo['HOST'], port=self.mongo['PORT'])
-        DB = CONN.get_database(self.mongo['DBLog'])
-        COLL = DB.get_collection(self.mongo['COLog'])
-        COLL.insert_one({
-            "userid": self.RESULT[index]['getuid'],
+        conn = MongoClient(host=self.mongo['HOST'], port=self.mongo['PORT'])
+        db = conn.get_database(self.mongo['DBLog'])
+        coll = db.get_collection(self.mongo['COLog'])
+        coll.insert_one({
+            "userid": self.result[field]['getuid'],
             "orderid": 'red'+str(int(time())),
             "ordertype": int(2),
             "logtype": int(10501),
             # "logtype2": int(0),
             "goldtype": int(3),
-            "amount": int(self.RESULT[index]['val']),
-            "remain": int(self.RESULT[index]['remain']),
+            "amount": int(self.result[field]['val']),
+            "remain": int(self.result[field]['remain']),
             "memo": "红包",
             "date": str(int(time()))
         })
-        CONN.close()
+        conn.close()
         return True
 
-    def del_redlog(self, index):
+    def del_redlog(self, field):
         """删除redis中RedrainGetPirce已处理的field"""
         from redis import Redis
-        CONN = Redis(host=self.redis['HOST'], port=self.redis['PORT'], db=self.redis['DB'])
-        CONN.hdel(self.redis['HKEY'], self.RESULT[index]['rkey'])
-        self.RESULT[index]['msg'] = 'del log'
+        conn = Redis(host=self.redis['HOST'], port=self.redis['PORT'], db=self.redis['DB'])
+        conn.hdel(self.redis['HKEY'], self.result[field]['rkey'])
+        self.result[field]['msg'] = 'del log'
         return True
 
     def to_logfile(self):
         """保存处理结果记录"""
         from time import time
-        logfile = '%slog_redpacket%d.txt' % (self.LOGPATH, int(time()))
+        logfile = '%slog_redpacket%d.txt' % (self.logpath, int(time()))
         with open(logfile, 'a+', encoding='utf8') as writer:
-            for i in self.RESULT:
-                writer.write(str(i)+'\n\r')
+            for i in self.result:
+                writer.write(str(self.result[i])+'\n\r')
         return True
+    
+    def to_errorlog(self, field):
+        from time import time
+        errorfile = "%serror_redpacket%d.txt" % (self.logpath, int(time()))
+        with open(errorfile, "a+", encoding="utf-8") as write:
+            writer.write(str(self.result[field]) + "\n\r")
