@@ -1,3 +1,4 @@
+# -*- coding=utf-8 -*-
 """
     阿里百川无线开放平台(http://baichuan.taobao.com/)
     账号:auzurdragon
@@ -12,7 +13,7 @@ class TopAPI(object):
     """阿里百川openAPI"""
     def __init__(self):
         self.requ_para = {
-            'app_key': '24598079',    # appKey，见控制台-应用管理
+            'app_key': '24598266',    # appKey，见控制台-应用管理
             # 'target_app_key': '',   # 被调用的目标AppKey，仅当被调用的API为第三方ISV提供时有效。
             'sign_method': 'md5',     # 是，签名的摘要算法，可选值：hmac, md5
             # 'session': '',          # 否，用户登录授权成功后，TOP颁发给应用的授权信息。
@@ -23,14 +24,38 @@ class TopAPI(object):
             # 'simplify': False,      # 否，boolean, 是否采用精简JSON返回格式，仅当format=json有效，默认值false
             'method':'',              # 是, 调用的接口名称
         }
+        self.signstr = ''
         self.sign = ''                     # 保存签名
-        self.app_secret = '8f8a525b7396fbd40c6c4aa9d7f37151'    # 保存app_secret
+        self.app_secret = '1ff01eaddc7cfda3f9a6dbaeffba28bf'    # 保存app_secret
         self.url_http = 'http://gw.api.taobao.com/router/rest'  # 正式环境HTTP请求地址
         self.url_https = 'https://eco.taobao.com/router/rest'   # 正式环境HTTPS请求地址
         self.get_url = ''             # 保存GET请求
+        self.recall = ''
         self.result = []              # 保存查询结果
         self.resultnum = int(0)       # 保存查询结果的总数量
         self.error = {}               # 保存错误信息
+
+    def tbk_uatm_favorites_get(self):
+        """
+        taobao.tbk.uatm.favorites.get (获取淘宝联盟选品库列表)
+        """
+        self.requ_para['method'] = 'taobao.tbk.uatm.favorites.get'
+        self.requ_para['fields'] = 'favorites_title,favorites_id,type'
+        self.requ_para['type'] = int(2)
+        self.requ_para['page_no'] = int(1)
+        # self.requ_para['page_size'] = int(20)
+
+    def tbk_ju_tqg_get(self):
+        """
+            taobao.tbk.ju.tqg.get (淘抢购api)
+            http://open.taobao.com/doc2/apiDetail.htm?apiId=27543&scopeId=11483
+        """
+        from time import time,localtime,strftime
+        self.requ_para['method'] = 'taobao.tbk.ju.tqg.get'
+        self.requ_para['adzone_id'] = int(130430763)
+        self.requ_para['fields'] = "click_url,pic_url,reserve_price,zk_final_price,total_amount,sold_num,title,category_name,start_time,end_time"
+        self.requ_para['start_time'] = strftime("%Y-%m-%d %H:%M:%S", localtime(time()))
+        self.requ_para['end_time'] = strftime("%Y-%m-%d %H:%M:%S", localtime(time()+int(86400)))
 
 
     def get_result(self):
@@ -45,26 +70,28 @@ class TopAPI(object):
             self.sign,
             "&".join(["%s=%s" % (i, self.requ_para[i]) for i in keys])
         ))
-        resu = loads(urlopen(quote(self.get_url, safe='/:?&=+')).read().decode())
-        if "error_response" in resu.keys():
-            self.error = resu
-            print(resu)
+        self.recall = loads(urlopen(quote(self.get_url, safe='/:?&=+')).read().decode())
+        if "error_response" in self.recall.keys():
+            self.error = self.recall
+            print(self.recall)
             return False
         else:
-            self.resultnum = resu["tbk_item_get_response"]["total_results"]
-            self.result = resu['tbk_item_get_response']['results']['n_tbk_item']
+            self.resultnum = self.recall["tbk_item_get_response"]["total_results"]
+            self.result = self.recall['tbk_item_get_response']['results']['n_tbk_item']
             return True
 
 
     def get_sign(self):
         """拼写签名"""
+        from time import time,localtime,strftime
         from hashlib import md5
         # 将参数名转为ascii码，再进行排序
+        self.requ_para['timestamp'] = strftime("%Y-%m-%d %H:%M:%S", localtime(time()))
         requ_keys = self.requ_para.keys()
         keys = [i.encode("ascii") for i in requ_keys]
         keys.sort()
         # 将参数名和参数值进行拼接，md5加密方法需要在拼接后的字符串首尾加上app_secret
-        signstr = "%s%s%s" % (
+        self.signstr = "%s%s%s" % (
             self.app_secret,
             str().join(
                 ["%s%s" % (i.decode("utf_8"), self.requ_para[i.decode("utf_8")]) for i in keys]
@@ -72,7 +99,7 @@ class TopAPI(object):
             self.app_secret
         )
         # 将拼接后的字符串转为utf-8码，进行md5加密,然后转为16进制字符串。转换后的结果应为32位字符串
-        self.sign = md5(signstr.encode("utf_8")).hexdigest().upper()
+        self.sign = md5(self.signstr.encode("utf_8")).hexdigest().upper()
         return True
 
 
@@ -103,3 +130,8 @@ class TopAPI(object):
         self.get_sign()
         self.get_result()
 
+if __name__ == "__main__":
+    s = TopAPI()
+    s.tbk_uatm_favorites_get()
+    s.get_sign()
+    s.get_result()

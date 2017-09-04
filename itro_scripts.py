@@ -1,3 +1,5 @@
+# -*- coding=utf-8 -*-
+
 """
     1. redis, 47.92.72.108:6394, db0
     2. Redraingetprice
@@ -9,7 +11,31 @@
     所依赖的包
     python -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pymongo,redis
     json,time,bson
+    pywin32(https://sourceforge.net/projects/pywin32/files/pywin32/Build%20221/)
 """
+import win32serviceutil
+import win32service
+import win32event
+
+class itroService(win32serviceutil.ServiceFramework):
+    """配置windows服务"""
+    _svc_name_ = "itroService"
+    _svc_display_name_ = "itroService"
+    _svc_description_ = "1. 读redis中RedrainGetPirce表中的数据，写入mongodb的iTRO_User, iTRO_RedPacket, iTRO_FlowLog; 2.查询高德云图中的过期红包数据, 并删除"
+
+    def __init__(self, args):
+        win32serviceUtil.ServiceFramework.__init__(self, args)
+        self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)
+    
+    def SvcDoRun(self):
+        do_scripts()
+        # 等待服务停止
+        win32event.WaitForSingleObject(self.HwaitStop, win32event.INFINITE)
+    
+    def SvcStop(self):
+        self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
+        win32event.SetEvent(self.hWaitStop)
+
 
 class itro_redpacket(object):
     """
@@ -268,11 +294,11 @@ class amap_redpacket(object):
         try:
             tmp = loads(request.urlopen(req).read().decode())
             self.lognum = tmp['count']
-            print ("get %d logs" % self.lognum)
+            print ("taskAmap, get %d logs" % self.lognum)
             self.result = [i['_id'] for i in tmp['datas']]
             return True
         except:
-            print("occured error")
+            print("taskAmap, occured error")
             return False
 
     def del_redpacket(self):
@@ -282,17 +308,10 @@ class amap_redpacket(object):
 
             参考：http://lbs.amap.com/api/yuntu/reference/cloudstorage
         """
+        from time import sleep
         from urllib import request
         from json import loads
         self.requ_para['url'] = "http://yuntuapi.amap.com/datamanage/data/delete"
-        if len(self.result) <=30:
-            self.requ_para['ids'] = ",".join(self.result)
-            req = "%s?key=%s&tableid=%s&filter=%s" % (
-                self.requ_para['url'],
-                self.requ_para['key'],
-                self.requ_para['tableid'],
-                self.requ_para['ids']
-                )
         while len(self.result) > 0:
             ids = self.result[:30]
             self.requ_para['ids'] = ",".join(ids)
@@ -307,6 +326,7 @@ class amap_redpacket(object):
                 print("del result: %s" % msg['info'])
                 del self.result[:30]
             except:
+                sleep(10)
                 print("del failed")
     
     def add_redids(self, idlist):
@@ -314,7 +334,7 @@ class amap_redpacket(object):
         self.result = idlist
 
 
-if __name__ == "__main__":
+def do_scripts():
     """执行脚本"""
     from time import sleep
     while True:
@@ -322,7 +342,7 @@ if __name__ == "__main__":
         task = itro_redpacket()
         if task.get_redField():
             stop = 0
-            for i in redlog.result:
+            for i in task.result:
                 try:
                     task.get_redValue(i)
                     task.get_userRemain(i)
@@ -343,10 +363,13 @@ if __name__ == "__main__":
             print("task redlog : %s not exists. next loop will do at 60s." % task.redis["HKEY"])
         
         # task2, 删除高德云地图中过期的红包数据
-        task = amap_redpacket()
-        task.get_redpacket()
-        task.add_redids([str(i) for i in range(368, 391)])
-        task.del_redpacket()
-
+        try:
+            task = amap_redpacket()
+            task.get_redpacket()
+            task.del_redpacket()
+            print("taskAmap has been done")
+        except:
+            print("taskAmap occured error")
+        
         # 休眠60秒后继续执行
         sleep(60)
