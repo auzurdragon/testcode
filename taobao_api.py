@@ -45,18 +45,27 @@ class TopAPI(object):
         self.requ_para['page_no'] = int(1)
         # self.requ_para['page_size'] = int(20)
 
-    def tbk_ju_tqg_get(self):
+    def tbk_ju_tqg_get(self, stime="", etime=""):
         """
             taobao.tbk.ju.tqg.get (淘抢购api)
             http://open.taobao.com/doc2/apiDetail.htm?apiId=27543&scopeId=11483
         """
         from time import time,localtime,strftime
+        stime = strftime("%Y-%m-%d %H:%M:%S", localtime(time())) if stime == "" else stime
+        etime = strftime("%Y-%m-%d %H:%M:%S", localtime(time()+int(86400))) if etime == "" else etime
+        self.requ_para['app_key'] = '24611799'
+        self.app_secret = '254010333b0e1a3bf9e86dab399a2073'
         self.requ_para['method'] = 'taobao.tbk.ju.tqg.get'
-        self.requ_para['adzone_id'] = int(130430763)
+        self.requ_para['adzone_id'] = int(130562660)
         self.requ_para['fields'] = "click_url,pic_url,reserve_price,zk_final_price,total_amount,sold_num,title,category_name,start_time,end_time"
-        self.requ_para['start_time'] = strftime("%Y-%m-%d %H:%M:%S", localtime(time()))
-        self.requ_para['end_time'] = strftime("%Y-%m-%d %H:%M:%S", localtime(time()+int(86400)))
-
+        self.requ_para['start_time'] = stime
+        self.requ_para['end_time'] = etime
+        self.get_sign()
+        if self.get_result():
+            self.resultnum = self.recall[list(self.recall.keys())[0]]["total_results"]
+            self.result = self.recall[list(self.recall.keys())[0]]['results']['results']
+        else:
+            print(self.error)
 
     def get_result(self):
         """接口查询"""
@@ -73,11 +82,8 @@ class TopAPI(object):
         self.recall = loads(urlopen(quote(self.get_url, safe='/:?&=+')).read().decode())
         if "error_response" in self.recall.keys():
             self.error = self.recall
-            print(self.recall)
             return False
         else:
-            self.resultnum = self.recall["tbk_item_get_response"]["total_results"]
-            self.result = self.recall['tbk_item_get_response']['results']['n_tbk_item']
             return True
 
 
@@ -103,7 +109,7 @@ class TopAPI(object):
         return True
 
 
-    def tbk_item_get(self, qword="尿不湿", itemloc="长沙", page=int(0)):
+    def tbk_item_get(self, qword="尿不湿", itemloc="", sortmet="total_sales_des", page=int(0)):
         """
             # taobao.tbk.item.get   淘宝客商品查询
             # 接口说明(http://open.taobao.com/doc2/apiDetail.htm?apiId=24515&scopeId=11483)淘宝客商品查询
@@ -117,7 +123,7 @@ class TopAPI(object):
         self.requ_para['q'] = qword
         # self.requ_para['cat'] =''           # 后台类目ID，用,分割，最大10个，该ID可以通过taobao.itemcats.get接口获取到
         self.requ_para['itemloc'] = itemloc
-        self.requ_para['sort'] = 'total_sales_des'  # 可选，排序_des（降序），排序_asc（升序），销量（total_sales），淘客佣金比率（tk_rate）， 累计推广量（tk_total_sales），总支出佣金（tk_total_commi）
+        self.requ_para['sort'] = sortmet  # 可选，排序_des（降序），排序_asc（升序），销量（total_sales），淘客佣金比率（tk_rate）， 累计推广量（tk_total_sales），总支出佣金（tk_total_commi）
         # self.requ_para['is_tmall'] = False,           # 可选，是否商城商品，设置为true表示该商品是属于淘宝商城商品，设置为false或不设置表示不判断这个属性
         # self.requ_para['is_overseas'] = False,        # 可选，是否海外商品，设置为true表示该商品是属于海外商品，设置为false或不设置表示不判断这个属性
         # self.requ_para['start_price'] = int(0),       # 可选，折扣价范围下限，单位：元
@@ -128,7 +134,11 @@ class TopAPI(object):
         self.requ_para['page_no'] = page                # 可选，第几页，默认：１
         self.requ_para['page_size'] = int(20)           # 可选，页大小，默认20，1~100
         self.get_sign()
-        self.get_result()
+        if self.get_result():
+            self.resultnum = self.recall['tbk_item_get_response']['total_results']
+            self.result = self.recall['tbk_item_get_response']['results']['n_tbk_item']
+        else:
+            print(self.error)
 
 if __name__ == "__main__":
     s = TopAPI()

@@ -1,3 +1,8 @@
+// 分销系统发货量统计
+
+
+db.fx_order.aggregate()
+
 db.iTRO_RedPacket.mapReduce(
     function(ctime){    // 定义map函数，取出 > 1499388000 的记录，进行map映射。
         if(this.date+this.outdate*3600 > 1499388000){

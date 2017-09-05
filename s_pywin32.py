@@ -19,13 +19,16 @@ class PythonService(win32serviceutil.ServiceFramework):
         win32serviceutil.ServiceFramework.__init__(self, args)
         self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)
         self.logger = self._getLogger()
-        self.run = True
+        self.isAlive = True
 
     def _getLogger(self):
+        import logging
+        import os
+        import inspect
         logger = logging.getLogger("[PythonService]")
         this_file = inspect.getfile(inspect.currentframe())
         dirpath = os.path.abspath(os.path.dirname(this_file))
-        handler = loggin.FileHandler(os.path.join(dirpath, 'service.log'))
+        handler = logging.FileHandler(os.path.join(dirpath, 'service.log'))
 
         formatter = logging.Formatter('%(asctime)s %(name) - 12s %(levelname) -8s %(message)s')
         handler.setFormatter(formatter)
@@ -37,7 +40,10 @@ class PythonService(win32serviceutil.ServiceFramework):
     
     def SvcDoRun(self):
         from time import time
-        print(int(time()))
+        self.logger.error("svc do run ...")
+        while self.isAlive:
+            self.logger.error("I am alive ...")
+            time.sleep(10)
         # 等待服务被停止
         win32event.WaitForSingleObject(self.hWaitStop, win32event.INFINITE)
     
