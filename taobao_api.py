@@ -18,7 +18,7 @@ class TopAPI(object):
             'sign_method': 'md5',     # 是，签名的摘要算法，可选值：hmac, md5
             # 'session': '',          # 否，用户登录授权成功后，TOP颁发给应用的授权信息。
             'timestamp': '',          # 是, 时间，格式为yyyy-MM-dd HH:mm:ss，时区为GMT+8
-             'format': 'json',         # 否，响应格式，默认为xml，可选值：xml, json
+            'format': 'json',         # 否，响应格式，默认为xml，可选值：xml, json
             'v': '2.0',               # 是, API协议版本，可选值：2.0
             # 'partner_id': '',       # 否，合作伙伴身份标识。
             # 'simplify': False,      # 否，boolean, 是否采用精简JSON返回格式，仅当format=json有效，默认值false
@@ -50,7 +50,7 @@ class TopAPI(object):
             taobao.tbk.ju.tqg.get (淘抢购api)
             http://open.taobao.com/doc2/apiDetail.htm?apiId=27543&scopeId=11483
         """
-        from time import time,localtime,strftime
+        from time import time, localtime, strftime
         stime = strftime("%Y-%m-%d %H:%M:%S", localtime(time())) if stime == "" else stime
         etime = strftime("%Y-%m-%d %H:%M:%S", localtime(time()+int(86400))) if etime == "" else etime
         self.requ_para['app_key'] = '24611799'
@@ -86,10 +86,9 @@ class TopAPI(object):
         else:
             return True
 
-
     def get_sign(self):
         """拼写签名"""
-        from time import time,localtime,strftime
+        from time import time, localtime, strftime
         from hashlib import md5
         # 将参数名转为ascii码，再进行排序
         self.requ_para['timestamp'] = strftime("%Y-%m-%d %H:%M:%S", localtime(time()))
@@ -107,7 +106,6 @@ class TopAPI(object):
         # 将拼接后的字符串转为utf-8码，进行md5加密,然后转为16进制字符串。转换后的结果应为32位字符串
         self.sign = md5(self.signstr.encode("utf_8")).hexdigest().upper()
         return True
-
 
     def tbk_item_get(self, qword="尿不湿", itemloc="", sortmet="total_sales_des", page=int(0)):
         """
@@ -145,3 +143,4 @@ if __name__ == "__main__":
     s.tbk_uatm_favorites_get()
     s.get_sign()
     s.get_result()
+
