@@ -140,7 +140,8 @@ class TopAPI(object):
 
 if __name__ == "__main__":
     s = TopAPI()
-    s.tbk_uatm_favorites_get()
+    s.tbk_ju_tqg_get()
     s.get_sign()
     s.get_result()
+
 
