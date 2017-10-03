@@ -8,34 +8,61 @@
 """
 
 class Fiction(object):
-    """ 小说管理 """
+    """ 小说管理 
+        get_url(), 按小说名称从网站上找到目录页面的链接
+        get_catalog(), 按小说目录页面链接，抓取各个章节的页面链接
+        get_content(self,gurl), 抓取单章节页面的内容
+        get_fiction(), 按照self.fict_cont中保存的各个章节的状态和页面链接，抓取状态false的页面内容
+        save_db(), 将self.fict_cont的章节内容，保存到数据库
+        save_txt(), 将self.fict_cont的各章节内容，保存到txt文件
+
+    
+    """
     def __init__(self, title=''):
         self.content = [] # 保存抓取的章节内容
-        self.info_conn = {
+        self.conn_info = {
             'host':'localhost',
             'port':28010,
             "db":"mydata",
-            "coll":"web_fiction"
+            "coll":"web_fiction",
+            "co_catalog":"fiction_catalog",
         }
         # 保存小说目录和信息
         self.fict_info = {
             'title':title, 'author':'', 'url':'',
-            'num':0, 'lastchapter':'', 'updatedate':'',
-            'catalog':[
-                {'name':'', 'url':''},
-            ]
+            'num':0, 'lastchapter':'',
         }
-        # 保存章节内容
+        # 保存待抓取的章节内容
         self.fict_cont = [
             # {'_id':ObjectId(), 'title':'书名', 'chapter':'章节名', 'curl':'章节链接', 'status':false, 'content':'章节内容'},
         ]
+        # 保存目录
+        self.file_path = "F:/getfiction/"
+        # 抓取的小说
+        self.files = ["守望黎明号",]
+        # 代理IP池
+        self.proip = ["120.132.71.212:80", "117.78.37.198:8000","121.31.102.200:8123","118.178.124.33:3128","120.7.84.59:8118","117.78.37.198:8000","27.46.20.132:8888","117.66.87.67:8118","111.155.116.220:8123","111.155.116.212:8123","114.216.37.214:9999",]
 
-    def db_content(self):
+    def get_dbcontent(self, status=False):
         """ 从数据库中查找没有抓取到的章节 """
         from pymongo import MongoClient
-        conn = MongoClient(host=self.info_conn["host"], port=self.info_conn["port"])
-        coll = conn.get_database(self.info_conn["db"]).get_collection(self.info_conn["coll"])
-        self.fict_cont = list(coll.find({"title":self.fict_info["title"], "status":False}))
+        conn = MongoClient(host=self.conn_info["host"], port=self.conn_info["port"])
+        db = conn.get_database(self.conn_info["db"])
+        # 查询小说名称是否存在，是则返回作者、最后一章，以及各章节的抓取状态
+        coll = db.get_collection(self.conn_info["co_catalog"])
+        check = coll.find_one({"title":self.fict_info["title"]})
+        if check:
+            self.fict_info["title"] = check["title"]
+            self.fict_info["author"] = check["author"]
+            self.fict_info["url"] = check["url"]
+            self.fict_info["num"] = check["num"]
+            self.fict_info["lastchapter"] = check["lastchapter"]
+            print ("%s 在数据库中有记录，最后一章：%s" % (self.fict_info["title"], self.fict_info["lastchapter"]))
+            # 从web_fiction表中提取抓取失败的章节记录
+            coll = db.get_collection(self.conn_info["coll"])
+            tmp = list(coll.find({"title":self.fict_info["title"], "status":False}, {"content":0}))
+        coll = conn.get_database(self.conn_info["db"]).get_collection(self.conn_info["coll"])
+        self.fict_cont = list(coll.find({"title":self.fict_info["title"], "status":status}))
         print("from mongodb get %d chapter" % len(self.fict_cont))
 
     def get_url(self):
@@ -43,9 +70,12 @@ class Fiction(object):
         from urllib import request, parse
         from bs4 import BeautifulSoup
         # 注意站内搜索的s值会变化
-        gurl = 'http://zhannei.baidu.com/cse/search?s=5592277830829141693&entry=1&q='+parse.quote(name)
-        tmp = request.Request(gurl)
-        tmp = request.urlopen(tmp).read().decode('utf-8', 'ignore')
+        gurl = 'http://zhannei.baidu.com/cse/search?s=5592277830829141693&entry=1&q='+parse.quote(self.fict_info["title"])
+        header = {
+            "User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:55.0) Gecko/20100101 Firefox/55.0"
+        }
+        req = request.Request(gurl, headers=header)
+        tmp = request.urlopen(req).read().decode('utf-8', 'ignore')
         tmp = BeautifulSoup(tmp, 'lxml')
         tmp = tmp.body.div.find_all('div', class_='result-item')
         self.fict_info['title'] = tmp[0].find('a', class_='result-game-item-title-link').get('title')
@@ -62,7 +92,11 @@ class Fiction(object):
         from urllib import request
         from bs4 import BeautifulSoup
         import time
-        tmp = request.urlopen(request.Request(self.fict_info['url'])).read().decode("gbk", 'ignore')
+        header = {
+            "User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:55.0) Gecko/20100101 Firefox/55.0"
+        }
+        req = request.Request(self.fict_info["url"], headers=header)
+        tmp = request.urlopen(req).read().decode("gbk", 'ignore')
         tmp = BeautifulSoup(tmp, 'lxml')
         self.fict_info['author'] = tmp.head.select('meta[name="og:novel:author"]')[0]['content']
         tmp_content = tmp.table.select("a")
@@ -74,7 +108,7 @@ class Fiction(object):
             j['status'] = False
             self.fict_cont.append(j)
         self.fict_info['num'] = len(self.fict_cont)
-        self.fict_info['lastchapter'] = self.fict_cont[-1]['name']
+        self.fict_info['lastchapter'] = self.fict_cont[-1]['chapter']
         self.fict_info['updatedate'] = time.strftime('%Y-%m-%d')
         print('  Fiction name : %s ' % self.fict_info['title'],
               'Author\'s name : %s ' % self.fict_info['author'],
@@ -82,33 +116,78 @@ class Fiction(object):
               '  Last chapter : %s ' % self.fict_info['lastchapter'],
               sep='\n')
 
+    # def get_content(self, gurl):
+    #     """ 抓取单章节小说内容 """
+    #     from urllib import request
+    #     from urllib import error
+    #     from bs4 import BeautifulSoup
+    #     import requests
+    #     import random
+    #     pro = self.proip
+    #     try:
+    #         header = {
+    #            "User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:55.0) Gecko/20100101 Firefox/55.0"
+    #         }
+    #         pro = ["120.132.71.212:80",]
+    #         req = request.Request(gurl, headers=header)
+    #         tmp = request.urlopen(req).read().decode('gbk', 'ignore')
+    #         tmp = BeautifulSoup(tmp, 'lxml').dl.select("dd#contents")
+    #         result = tmp[0].get_text().replace("\xa0\xa0\xa0\xa0", "\n\r")
+    #         return result
+    #     except Exception as e:
+    #         print(e)
+    #         return False
+
     def get_content(self, gurl):
         """ 抓取单章节小说内容 """
-        from urllib import request
-        from urllib import error
-        from bs4 import BeautifulSoup
+        import requests
+        import random
+        from bs4 import BeautifulSoup as bs
+        # 构造header请求头
+        header = {
+            "User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:55.0) Gecko/20100101 Firefox/55.0"
+        }
+        # 用于保存结果的tmp
+        tmp = False
+        # 判断IP池是否还有可用的代理IP，如果没有则直接使用本机的IP
+        if len(self.proip):
+            choiceip = random.choice(self.proip)
+        else:
+            choiceip = ""
+            print("IP池为空，需要更新IP池")
         try:
-            tmp = request.urlopen(request.Request(gurl)).read().decode('gbk', 'ignore')
-            tmp = BeautifulSoup(tmp, 'lxml').dl.select("dd#contents")
-            result = tmp[0].get_text().replace("\xa0\xa0\xa0\xa0", "\n\r\n\r")
-            return result
-        except Exception as e:
-            print(e)
-            return False
+            request = requests.get(
+                gurl,
+                proxies = {"http":choiceip},
+                headers = header
+            )
+            tmp = request.content.decode("gbk")
+            tmp = bs(tmp).dl.select("dd#contents")[0]
+            tmp = tmp.get_text().replace("\xa0\xa0\xa0\xa0", "\n\r")
+        except requests.exceptions.ProxyError as per:
+            print("%s expired" % choiceip)
+            self.proip.remove(choiceip)
+        finally:
+            return tmp
 
     def save_db(self):
         """ 将抓到的小说章节，写入MongoDB"""
         import pymongo
-        conn = pymongo.MongoClient(self.info_conn['host'], self.info_conn['port'])
-        coll = conn.get_database(self.info_conn["db"]).get_collection(self.info_conn["coll"])
-        for item in s.fict_cont:
+        conn = pymongo.MongoClient(self.conn_info['host'], self.conn_info['port'])
+        db = conn.get_database(self.conn_info["db"])
+        coll = db.get_collection(self.conn_info["coll"])
+        for item in self.fict_cont:
             try:
                 coll.update_one(
                     {
-                        "_id":item["_id"]
+                        "title":item["title"],
+                        "chapter":item["chapter"]
                     },
                     {
                         "$set":{
+                            "title":item["title"],
+                            "chapter":item["chapter"],
+                            "culr":item["curl"],
                             "status":item["status"],
                             "content":item["content"],
                         }
@@ -118,35 +197,53 @@ class Fiction(object):
                 print('%s: %s has been saved' % (item['title'], item["chapter"]))
             except:
                 print("%s: %s save failed" % (item["title"], item["chapter"]))
+        try:
+            coll = db.get_collection(self.conn_info["co_catalog"])
+            coll.update_one(
+                {
+                    "title":self.fict_info["title"]
+                },
+                {
+                    "$set":{
+                        "author":self.fict_info["author"],
+                        "url":self.fict_info["url"],
+                        "num":int(self.fict_info["num"]),
+                        "lastchapter":self.fict_cont[-1]["chapter"],
+                    }
+                },
+                upsert = True
+            )
+            print("%s save success" % self.fict_info["title"])
+        except:
+            print("%s save catalog failed" % self.fict_info["title"])
         conn.close()
 
-    def save_txt(self, path='h:/getfiction/'):
+    def save_txt(self):
         """ 写入到txt文件 """
-        filename = path+self.info_web['name']+'.txt'
+        filename = self.file_path+self.fict_info['title']+'.txt'
         with open(filename, 'a+', encoding='utf8') as writer:
-            for i in self.content:
-                writer.write('\n\r'+i['chapter_name'])
+            for i in self.fict_cont:
+                writer.write('\n\r'+i["chapter"]+"\n\r"+i['content'])
 
-if __name__ == "__main__":
-    from get_fiction import Fiction
-    from time import sleep
-success = int(0)
-errors = int(0)
-for i in s.fict_cont:
-    if i["status"]:
-        continue
-    else:
-        result = s.get_content(i["curl"])
-        if result:
-            i["content"] = result
-            i["status"] = True
-            success += 1
-            print("成功： %s " % i["chapter"])
-            sleep(1)
-        else:
-            i["status"] = False
-            errors += 1
-            print("失败： %s" % i["chapter"])
-            sleep(5)
-
-print("抓取：%d 章，成功：%d 章，失败：%d 章" % ((success + errors), success, errors))
+    def get_fiction(self, sleept=[2, 5]):
+        """抓取小说内容, sleep指定每次抓取成功或失败后的休眠时间"""
+        from time import sleep
+        success = int(0)
+        errors = int(0)
+        for i in self.fict_cont:
+            if i["status"]:
+                continue
+            else:
+                result = self.get_content(i["curl"])
+                if result:
+                    i["content"] = result
+                    i["status"] = True
+                    success += 1
+                    print("成功： %s " % i["chapter"])
+                    sleep(sleept[0])
+                else:
+                    i["status"] = False
+                    errors += 1
+                    print("失败： %s" % i["chapter"])
+                    sleep(sleept[1])
+        print("抓取：%d 章，成功：%d 章，失败：%d 章" % ((success + errors), success, errors))
