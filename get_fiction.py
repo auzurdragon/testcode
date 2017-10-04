@@ -41,9 +41,26 @@ class Fiction(object):
         # 抓取的小说
         self.files = ["守望黎明号",]
         # 代理IP池
-        self.proip = ["120.132.71.212:80", "117.78.37.198:8000","121.31.102.200:8123","118.178.124.33:3128","120.7.84.59:8118","117.78.37.198:8000","27.46.20.132:8888","117.66.87.67:8118","111.155.116.220:8123","111.155.116.212:8123","114.216.37.214:9999",]
+        self.proip = ["120.132.71.212:80", "120.7.84.59:8118","27.46.20.132:8888","117.66.87.67:8118","111.155.116.212:8123",]
 
-    def get_dbcontent(self, status=False):
+    def get_proip(self):
+        """获得代理IP"""
+        import requests
+        from bs4 import BeautifulSoup as bs
+        ipurl = "http://www.xicidaili.com/wt/"
+        header = {
+            "User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:55.0) Gecko/20100101 Firefox/55.0"
+        }
+        tmp = requests.get(ipurl, headers = header)
+        tmp = bs(tmp.content.decode(), "lxml")
+        tmp = tmp.select("table")[0].find_all("tr")
+        for i in tmp[1:]:
+            x = i.find_all("td")
+            j = ("%s:%s" % (x[1].text, x[2].text))
+            self.proip.append(j)
+        print("get %d ip" % len(tmp[1:]))
+
+    def get_db(self, status=False):
         """ 从数据库中查找没有抓取到的章节 """
         from pymongo import MongoClient
         conn = MongoClient(host=self.conn_info["host"], port=self.conn_info["port"])
@@ -106,6 +123,7 @@ class Fiction(object):
             j['chapter'] = i.get_text()
             j['curl'] = self.fict_info['url']+i.get('href')
             j['status'] = False
+            j['content'] = ""
             self.fict_cont.append(j)
         self.fict_info['num'] = len(self.fict_cont)
         self.fict_info['lastchapter'] = self.fict_cont[-1]['chapter']
@@ -145,12 +163,12 @@ class Fiction(object):
         from bs4 import BeautifulSoup as bs
         # 构造header请求头
         header = {
-            "User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:55.0) Gecko/20100101 Firefox/55.0"
+            "User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:55.0) Gecko/20100101 Firefox/55.0",
         }
         # 用于保存结果的tmp
         tmp = False
         # 判断IP池是否还有可用的代理IP，如果没有则直接使用本机的IP
-        if len(self.proip):
+        if self.proip:
             choiceip = random.choice(self.proip)
         else:
             choiceip = ""
@@ -161,11 +179,15 @@ class Fiction(object):
                 proxies = {"http":choiceip},
                 headers = header
             )
-            tmp = request.content.decode("gbk")
-            tmp = bs(tmp).dl.select("dd#contents")[0]
-            tmp = tmp.get_text().replace("\xa0\xa0\xa0\xa0", "\n\r")
-        except requests.exceptions.ProxyError as per:
-            print("%s expired" % choiceip)
+            if request.ok:
+                tmp = request.content.decode("gbk","ignore")
+                tmp = bs(tmp, "lxml").dl.select("dd#contents")[0]
+                tmp = tmp.get_text().replace("\xa0\xa0\xa0\xa0", "\n\r")
+            else:
+                print("ip %s get failed" % choiceip)
+                self.proip.remove(choiceip)
+        except Exception as per:
+            print("ip %s get failed, %s" % (choiceip,per))
             self.proip.remove(choiceip)
         finally:
             return tmp
@@ -187,7 +209,7 @@ class Fiction(object):
                         "$set":{
                             "title":item["title"],
                             "chapter":item["chapter"],
-                            "culr":item["curl"],
+                            "curl":item["curl"],
                             "status":item["status"],
                             "content":item["content"],
                         }
