@@ -56,7 +56,7 @@ class itro_redpacket(object):
             # }
         }
         self.lognum = int(0)
-        # 用于保存处理记录的文件夹
+        # 用于保存处理记录的文件夹，已取消
         self.logpath = 'D:/iTROLog/'
 
     def get_redField(self):

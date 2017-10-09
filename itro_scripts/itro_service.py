@@ -1,9 +1,22 @@
 # -*- coding=utf-8 -*-
 """
 依赖包
-python -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pymongo
+python -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pymongo, redis
 time, bson
-pywin32
+pywin32：需要下载安装，不能使用PIP，http://sourceforge.net/projects/pywin32/files/pywin32/
+
+安装服务
+python itro_service.py install
+让服务自动启动
+python itro_service.py --startup auto install
+启动服务
+python itro_service.py start
+重启服务
+python itro_service.py restart
+停止服务
+python itro_service.py stop
+删除/卸载服务
+python itro_service.py remove
 """
 import win32serviceutil
 import win32service
@@ -39,7 +52,7 @@ class itro_service(win32serviceutil.ServiceFramework):
             'PORT':6394,
             'DB':0,
             'HKEY':'RedrainGetPirce'
-        }
+        } 
 
     def _getLogger(self):
         import logging
@@ -115,18 +128,19 @@ class itro_service(win32serviceutil.ServiceFramework):
                 svcAmapred.get_redpacket()
                 t = svcAmapred.del_redpacket()
                 logmsg = "高德云图红包记录处理，%d redpacketlogs have done" % t
-                self.logger.info(logmsg)
+                # self.logger.info(logmsg)  # 记录处理成功记录，关闭
             except:
                 logmsg = "高德云图红包记录处理，del_redpacket has errors"
                 self.logger.error(logmsg)
 
         # 服务3：清理redis缓存中的领取红包记录，给相应的账号加钱。
-            # 执行红包记录处理, 每次处理5000条, 则进行一次休眠，以降低压力
             svcRedpacket = itro_redpacket(mongo=self.mongo, redis=self.redis)
             if svcRedpacket.get_redField():
                 for i in svcRedpacket.result:
                     try:
                         svcRedpacket.get_redValue(i)
+                        # 0915：延迟2秒执行，分散服务器压力
+                        time.sleep(2)
                         svcRedpacket.get_userRemain(i)
                         svcRedpacket.to_userRemain(i)
                         svcRedpacket.to_redlog(i)
@@ -134,7 +148,7 @@ class itro_service(win32serviceutil.ServiceFramework):
                         to_flowlog(
                             mongo={"HOST":self.mongo["HOST"],
                                    "PORT":self.mongo["PORT"],
-                                   "DB":self.mongo["DBflow"],
+                                   "DB":self.mongo["DBFlow"],
                                    "CO":self.mongo["COFlow"]},
                             userid=svcRedpacket.result[i]["getuid"],
                             orderid='red'+str(int(time.time())),

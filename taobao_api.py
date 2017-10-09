@@ -144,4 +144,7 @@ if __name__ == "__main__":
     s.get_sign()
     s.get_result()
 
-
+# 淘宝客商品抓取
+url = https://ai.taobao.com/search/index.htm?fcat=50006004&key=宝宝用品&pid=mm_126044062_36508049_130588891
+url = request.quote(url, safe=":/?&_")
+r = request.urlopen(url).read().decode()
