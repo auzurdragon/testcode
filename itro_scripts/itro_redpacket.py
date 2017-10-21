@@ -1,22 +1,9 @@
 # -*- coding=utf-8 -*-
 
-"""
-    1. redis, 47.92.72.108:6394, db0
-    2. Redraingetprice
-    3. redveid:红包ID, getuid:领取用户id, val:领取的金额,
-    4. 按 getuid 访问iTROdb.iTRO_User, 获得用户当前的 Money, 将Money修改为 Money+val, 同时Money+val保存入记录,做为remain
-    5. 按 redveid 访问 iTRO_SocialDb.iTRO_RedPacket, 将 getuid, val 分别push到数组getuid, getAmount。
-    6. 访问 iTROLogdb.iTRO_FlowLog, insert 记录。
-
-    所依赖的包
-    python -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pymongo,redis
-    json,time,bson
-"""
-
 class itro_redpacket(object):
     """
         红包记录处理
-        1. redis, 47.92.72.108:6394, db0
+        1. redis, localhost:6394, db0
         2. Redraingetprice
         3. redveid:红包ID, getuid:领取用户id, val:领取的金额,
         4. 按 getuid 访问iTROdb.iTRO_User, 获得用户当前的 Money, 将Money修改为 Money+val, 同时Money+val保存入记录,做为remain
@@ -56,7 +43,7 @@ class itro_redpacket(object):
             # }
         }
         self.lognum = int(0)
-        # 用于保存处理记录的文件夹，已取消
+        # 用于保存处理记录的文件夹
         self.logpath = 'D:/iTROLog/'
 
     def get_redField(self):
@@ -92,20 +79,23 @@ class itro_redpacket(object):
         conn = MongoClient(host=self.mongo['HOST'], port=self.mongo['PORT'])
         db = conn.get_database(self.mongo['DBUser'])
         coll = db.get_collection(self.mongo['COUser'])
-        T = coll.find_one({'_id':ObjectId(self.result[field]['getuid'])}, {'_id':0, 'Money':1, 'UseMomey':1})
-        if T:
-            self.result[field]['money'] = T['Money']
-            self.result[field]['usemoney'] = T['UseMomey'] + self.result[field]['val']
-            # 账户余额计算：使用usemoney+amount
-            self.result[field]['remain'] = T['UseMomey'] + self.result[field]['val']
-            self.result[field]['msg'] = 'get remain'
+        try:
+            T = coll.find_one({'_id':ObjectId(self.result[field]['getuid'])}, {'_id':0, 'Money':1, 'UseMomey':1})
+            if T:
+                self.result[field]['money'] = T['Money']
+                self.result[field]['usemoney'] = T['UseMomey'] + self.result[field]['val']
+                # 账户余额计算：使用usemoney+amount
+                self.result[field]['remain'] = T['UseMomey'] + self.result[field]['val']
+                self.result[field]['msg'] = 'get remain'
+                return True
+            else:
+                self.result[field]['msg'] = 'get remain failed'
+                self.to_errorlog(field)
+                return False
+        except Exception as e:
+            raise NameError("get_userRemain %s failed, %s" % (field,e))
+        finally:
             conn.close()
-            return True
-        else:
-            self.result[field]['msg'] = 'get remain failed'
-            self.to_errorlog(field)
-            conn.close()
-            return False
 
 
     def to_userRemain(self, field):
@@ -117,19 +107,21 @@ class itro_redpacket(object):
         conn = MongoClient(host=self.mongo['HOST'], port=self.mongo['PORT'])
         db = conn.get_database(self.mongo['DBUser'])
         coll = db.get_collection(self.mongo['COUser'])
-        tmp = coll.update_one(
-            {'_id':ObjectId(self.result[field]['getuid'])},
-            {'$inc':{'Money':int(self.result[field]['val']),
-                     'UseMomey':int(self.result[field]['val'])}}
-        )
-        conn.close()
-        if tmp.raw_result['updatedExisting']:
-            return True
-        else:
-            self.result[field]['msg'] = 'update money failed'
-            self.to_errorlog(field)
-            return False
-
+        try:
+            tmp = coll.update_one(
+                {'_id':ObjectId(self.result[field]['getuid'])},
+                {'$inc':{'Money':int(self.result[field]['val']),
+                         'UseMomey':int(self.result[field]['val'])}}
+            )
+            conn.close()
+            if tmp.raw_result['updatedExisting']:
+                return True
+            else:
+                self.result[field]['msg'] = 'update money failed'
+                self.to_errorlog(field)
+                return False
+        except Exception as e:
+            raise NameError("to_userRemain %s failed, %s " % (field, e))
 
     def to_redlog(self, field):
         """
@@ -140,20 +132,25 @@ class itro_redpacket(object):
         conn = MongoClient(host=self.mongo['HOST'], port=self.mongo['PORT'])
         db = conn.get_database(self.mongo['DBRed'])
         coll = db.get_collection(self.mongo['CORed'])
-        tmp = coll.update_one(
-            filter = {'$or':[{'_id':ObjectId(self.result[field]['redveid'])},
-                             {'randomnum': self.result[field]['redveid']}]},
-            update = {'$push':{'getuid':self.result[field]['getuid'],
-                               'getAmount':int(self.result[field]['val'])}}
-        )
-        conn.close()
-        if tmp.raw_result['updatedExisting']:
-            return True
-        else:
-            self.result[field]['msg'] = 'write redpacket failed'
-            self.to_errorlog(field)
-            return False
-    
+        try:
+            tmp = coll.update_one(
+                filter={'$or':[{'_id':ObjectId(self.result[field]['redveid'])},
+                               {'randomnum':self.result[field]['redveid']}]},
+                update={'$push':{'getuid':self.result[field]['getuid'],
+                                 'getAmount':int(self.result[field]['val'])}}
+            )
+            conn.close()
+            if tmp.raw_result['updatedExisting']:
+                return True
+            else:
+                self.result[field]['msg'] = 'write redpacket failed'
+                self.to_errorlog(field)
+                return False
+        except Exception as e:
+            raise NameError("to_redlog %s failed, %s" % (field, e))
+        finally:
+            conn.close()
+
     def to_flowlog(self, field):
         """
             访问iTROLogdb.iTRO_FlowLog, 写入金额增加记录
@@ -163,20 +160,24 @@ class itro_redpacket(object):
         conn = MongoClient(host=self.mongo['HOST'], port=self.mongo['PORT'])
         db = conn.get_database(self.mongo['DBLog'])
         coll = db.get_collection(self.mongo['COLog'])
-        coll.insert_one({
-            "userid": self.result[field]['getuid'],
-            "orderid": 'red'+str(int(time())),
-            "ordertype": int(2),
-            "logtype": int(10501),
-            # "logtype2": int(0),
-            "goldtype": int(3),
-            "amount": int(self.result[field]['val']),
-            "remain": int(self.result[field]['remain']),
-            "memo": "红包",
-            "date": str(int(time()))
-        })
-        conn.close()
-        return True
+        try:
+            coll.insert_one({
+                "userid": self.result[field]['getuid'],
+                "orderid": 'red'+str(int(time())),
+                "ordertype": int(2),
+                "logtype": int(10501),
+                # "logtype2": int(0),
+                "goldtype": int(3),
+                "amount": int(self.result[field]['val']),
+                "remain": int(self.result[field]['remain']),
+                "memo": "红包",
+                "date": str(int(time()))
+            })
+            return True
+        except Exception as e:
+            raise NameError("to_flowlog %s failed, %s" % (field, e))
+        finally:
+            conn.close()
 
     def del_redlog(self, field):
         """删除redis中RedrainGetPirce已处理的field"""
@@ -191,7 +192,11 @@ class itro_redpacket(object):
         conn = MongoClient(host=self.mongo['HOST'], port=self.mongo['PORT'])
         db = conn.get_database(self.mongo['dberror'])
         coll = db.get_collection(self.mongo['coerror'])
-        coll.insert_one(self.result[field])
-        conn.close()
-        return True
-
+        try:
+            coll.insert_one(self.result[field])
+            self.result.pop(field)
+            return True
+        except Exception as e:
+            raise NameError("to_errorlog %s failed, %s" % (field, e))
+        finally:
+            conn.close()
