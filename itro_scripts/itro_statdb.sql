@@ -1,3 +1,5 @@
+SELECT * FROM itro_dailystat
+
 -- 日常数据统计表
 CREAtE TABLE itro_dailystat
 (
@@ -20,3 +22,7 @@ CREAtE TABLE itro_dailystat
     topwares NVARCHAR(255) DEFAULT(NULL),    -- 商品浏览次数TOP10，以|分隔
     PRIMARY KEY (tid)
 )
+
+
+INSERT INTO itro_dailystat (splat,chargenum,chargesum,chargeuser,loginip,loginnum,loginuser,mallview,newstore,newuser,sdate,storeview,topstore,topwares,totaluser,waresview) 
+VALUES (0,0,0,0,1,41,16,13,2,24,'2017-10-10',7,'59db408fd700dc0efcf6ac13|59db3f94d700dc0efcf6ab69|596c1929048e800f281c903e|59dcaf79d700dc16c4920820|58d078236c6df51fe06a6bb5|59db3bbad700dc0efcddf0f1|59dc739bd700dc16c4c58710','59db408fd700dc0efcf6ac13|59db3f94d700dc0efcf6ab69|596c1929048e800f281c903e|59dcaf79d700dc16c4920820|58d078236c6df51fe06a6bb5|59db3bbad700dc0efcddf0f1|59dc739bd700dc16c4c58710',38,6)

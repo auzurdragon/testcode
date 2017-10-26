@@ -31,6 +31,7 @@ reader = open("pandas/movies.dat", "rb")
 movies = pickle.load(reader)
 reader.close()
 
+
 # 合并数据集, merge(data1,data2), 自动按照列名的重叠情况判断合并键
 data = pd.merge(pd.merge(ratings, users), movies)
 
