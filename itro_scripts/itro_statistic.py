@@ -176,13 +176,13 @@ class Statistic(object):
     def s_order(self):
         """统计交易子订单"""
 
-
+# 查询数据
 def get_data(self,sdate,edate):
     """查询数据"""
 from pandas import DataFrame as df
 from pymongo import MongoClient
-sdate = "2017-10-20"
-edate = "2017-10-24"
+sdate = "2017-10-25"
+edate = "2017-10-29"
 client = MongoClient("47.92.72.108",28010)
 conn = client.iTROdb.iTRO_Statistic
 td = conn.find({"sdate":{"$gte":sdate, "$lte":edate}},{"_id":0,"totaluser":1,"newuser":1,"loginuser":1,"loginnum":1,"loginip":1,"newstore":1,"chargeuser":1,"chargesum":1,"chargenum":1,"mallview":1,"storeview":1,"waresview":1,"sdate":1})
