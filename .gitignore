@@ -105,3 +105,14 @@ ENV/
 
 # VSCode
 .vscode/
+
+# Python对象
+.pkl
+
+# 临时文件
+tmp/
+
+# R文件
+.RData
+.Rhistory
+itchat.pkl
