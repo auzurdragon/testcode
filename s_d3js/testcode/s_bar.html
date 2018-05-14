@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<!-- 使用div绘制条形图  -->
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>D3 Page Template</title>
+        <script type="text/javascript" src="../d3/d3.js"></script>
+        <!-- 定义div.bar样式  -->
+        <style type="text/css">
+            div.bar {
+                display: inline-block; 
+                width: 20px;    /* 设置条形的宽度 */
+                height: 75px;   /* 后面再覆盖高度 */
+                background-color: teal;
+                margin-right: 2px;" /* 设置间距*/
+            }
+        </style>
+    </head>
+    <body>
+        <!-- 使用dataset数组生成一张条形  -->
+        <h3>使用dataset数组生成一张条形</h3>
+        <pre>
+        <code>
+var dataset = [5, 10, 15, 20, 25];
+d3.select("body div.example1").selectAll("div")
+  .data(dataset)
+  .enter()
+  .append("div")
+  .attr("class", "bar")
+  .style("height",function(d){return d*5+"px"});
+        </code>
+        </pre>
+        <div class="example1"></div>
+        <script type="text/javascript">
+            var dataset = [5, 10, 15, 20, 25];
+            d3.select("body div.example1").selectAll("div")
+                .data(dataset)
+                .enter()
+                .append("div")
+                .attr("class", "bar")
+                .style("height",function(d){return d*5+"px"});
+        </script>
+        </br>
+        <!-- 使用随机数组生成条形  -->
+        <h3>使用随机数组生成条形</h3>
+        <div class="example2"></div>
+        <script>
+            var dataset = [];
+            for (var i = 0; i < 25; i++) {
+                var newNumber = Math.floor(Math.random() * 30);
+                dataset.push(newNumber);
+            }
+            d3.select("body div.example2").selectAll("div")
+                .data(dataset)
+                .enter()
+                .append("div")
+                .attr("class", "bar")
+                .style("height", function(d){return d*5+"px"});
+        </script>
+        </br>
+        <!-- 使用SVG绘图  -->
+        <h3>使用SVG绘图</h3>
+        <pre>var w = 500</pre>
+        <div class="exampleSVG"></div>
+        <script>
+            /* 定义SVG变量，方便直接使用svg调用选择器 */
+            var w = 500;
+            var h = 50;
+            var svg = d3.select("body div.exampleSVG")
+                        .append("svg")
+                        .attr("width", w)
+                        .attr("height", h);
+            var dataset = [ 5, 10, 15, 20, 25];
+            svg.selectAll("circle")
+               .data(dataset)
+               .enter()
+               .append("circle")
+               .attr("cx", function(d, i){return (i*50)+25})  // i接收当前元素的索引值
+               .attr("cy", h/2)
+               .attr("r", function(d){return d})
+               .attr("fill", "yellow")
+               .attr("stroke", "orange")
+               .attr("stroke-width", function(d){return d/2});
+        </script>
+    </body>
+</html>

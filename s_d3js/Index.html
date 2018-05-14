@@ -1,0 +1,337 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <title>@ViewBag.Title</title>
+	<script src="http://apps.bdimg.com/libs/jquery/2.1.1/jquery.min.js"></script>
+    <link href="/Content/css/bootstrap.css" rel='stylesheet' type='text/css' />
+    <!-- jQuery (Bootstrap's JavaScript plugins) -->
+    <script src="/Content/js/jquery.min.js"></script>
+    <!-- Custom Theme files -->
+    <link href="/Content/css/style.css" rel="stylesheet" type="text/css" media="all" />
+    <!-- Custom Theme files -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="keywords" content="iTRO" />
+    <script type="application/x-javascript"> 
+		addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false);
+		function hideURLbar(){ window.scrollTo(0,1); } ;
+		<!-- // $('a.view hvr-bounce-to-left').setAttribute('href','www.crelove.net');		 -->
+	</script>
+    <!--webfont-->
+    <!--animated-css-->
+    <link href="/Content/css/animate.css" rel="stylesheet" type="text/css" media="all">
+    <style type="text/css">
+        .fontcolor {
+            color: #ffffff;
+        }
+    </style>
+    <script src="/Content/js/wow.min.js"></script>
+    <!--[if lt IE 9]><script type="text/javascript" src="js/html5.js"></script><![endif]-->
+
+    <script>
+        new WOW().init();
+    </script>
+    <!--/animated-css-->
+    <link href='~/Content/css/StyleSheet1.css' rel='stylesheet' type='text/css'>
+    <!---- start-smoth-scrolling---->
+    <script type="text/javascript" src="/Content/js/move-top.js"></script>
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript" src="/Content/js/easing.js"></script>
+    <script type="text/javascript">
+        jQuery(document).ready(function ($) {
+            $(".scroll").click(function (event) {
+                event.preventDefault();
+                $('html,body').animate({ scrollTop: $(this.hash).offset().top }, 900);
+            });
+        });
+
+    </script>
+    <!---- start-smoth-scrolling---->
+</head>
+<body>
+    <!---->
+    <a class="testurl" href="http://www.51itro.com"><h1>testdown</h1></a>
+	<div class="banner">
+        <div class="container">
+            <div class="header">
+                <div class="logo wow fadeInLeft" data-wow-delay="0.5s">
+                    <a><img src="/Content/images/logo1.png" alt="" /></a>
+                </div>
+                <div class="top-menu">
+                    <span class="menu"></span>
+                    <ul>
+                        <li class="scroll"><a href="/iTRO/Index">首页</a></li>
+                        <li><a class="scroll" href="#features">公告</a></li>
+                        <li><a class="scroll" href="#about">培训专区</a></li>
+                        <li><a class="scroll" href="#testimonials">关于我们</a></li>
+                        <li><a class="scroll" href="#pricing">留言板</a></li>
+                        <li><a class="scroll" href="#contact">联系我们</a></li>
+                    </ul>
+                </div>
+                <!-- script-for-menu -->
+                <script>
+                    $("span.menu").click(function () {
+                        $(".top-menu ul").slideToggle("slow", function () {
+                        });
+                    });
+                </script>
+                <!-- script-for-menu -->
+
+                <div class="clearfix"></div>
+            </div>
+            <div class="banner-info">
+                <div class="col-md-6 banner-text wow fadeInRight" data-wow-delay="0.5s">
+                    @Html.Action("GetHomeList", "iTRO")
+                
+
+                </div>
+			<a class="view hvr-bounce-to-left" href="/App/ITRO.apk" style=" position:relative; top:69px; right:45px; z-index:99;" >DownLoad</a>
+
+                <div class="col-md-6 banner-pic wow fadeInLeft" data-wow-delay="0.5s">
+                    @*@Html.Action("HomeImgList", "iTRO")*@
+                    <img src="~/Content/images/400.png" />
+              
+                </div>
+                <div class="clearfix"></div>
+            </div>
+        </div>
+    </div>
+    <!---->
+    <div id="features" class="features">
+        <div class="container">
+            <div class="features-head">
+                <h3>公告</h3>
+            </div>
+            <div class="features-section">
+                @Html.Action("GetNoticeList", "iTRO")
+                @*<div class="col-md-3 feature-grid">
+                        <img class="wow bounceIn" data-wow-delay="0.4s" src="/Content/images/icon1.png" alt="" />
+                        <h3>Responsive</h3>
+                        <p>Fusce fermentum placerat magna ac pharetra. Aliquam euismod elit non ipsum lacinia consectetur.</p>
+                    </div>
+                    <div class="col-md-3 feature-grid">
+                        <img class="wow bounceIn" data-wow-delay="0.4s" src="/Content/images/icon2.png" alt="" />
+                        <h3>Customizable</h3>
+                        <p>Fusce fermentum placerat magna ac pharetra. Aliquam euismod elit non ipsum lacinia consectetur.</p>
+                    </div>
+                    <div class="col-md-3 feature-grid">
+                        <img class="wow bounceIn" data-wow-delay="0.4s" src="/Content/images/icon3.png" alt="" />
+                        <h3>Lovely design</h3>
+                        <p>Fusce fermentum placerat magna ac pharetra. Aliquam euismod elit non ipsum lacinia consectetur.</p>
+                    </div>
+                    <div class="col-md-3 feature-grid">
+                        <img class="wow bounceIn" data-wow-delay="0.4s" src="/Content/images/icon4.png" alt="" />
+                        <h3>Mobile Friendly</h3>
+                        <p>Fusce fermentum placerat magna ac pharetra. Aliquam euismod elit non ipsum lacinia consectetur.</p>
+                    </div>*@
+                <div class="clearfix"></div>
+            </div>
+        </div>
+    </div>
+    <!---->
+    <div id="about" class="about">
+        <div class="container">
+            <h3 style="text-align:center">培训专区</h3>
+            @Html.Action("GetTrainList", "iTRO")
+
+        </div>
+    </div>
+
+    <!---->
+    <script src="/Content/js/responsiveslides.min.js"></script>
+    <script>
+        // You can also use "$(window).load(function() {"
+        $(function () {
+            $("#slider2").responsiveSlides({
+                auto: true,
+                pager: true,
+                speed: 300,
+                namespace: "callbacks",
+            });
+        });
+    </script>
+    <!---->
+
+
+    <div id="testimonials" class="pricing">
+        <div class="container">
+            <div class="container">
+                <div class="pricing-text">
+                    @*<h4>QUALITY HAS ITS PRICE</h4>*@
+                    <h3>关于我们</h3>
+                </div>
+                @*<div class="copyrights">Collect from <a href="http://www.cssmoban.com/">手机网站模板</a></div>*@
+                <!-- start slider -->
+                <div class="pricing-grids">
+                    <div class="slider">
+                        <ul class="rslides" id="slider2">
+                            @Html.Action("Aboutinfo", "iTRO")
+                        </ul>
+
+                    </div>
+                    <!-- end slider -->
+                </div>
+            </div>
+            <div class="copyrights">Collect from <a href="http://www.cssmoban.com/">手机网站模板</a></div>
+            <!-- start slider -->
+
+        </div>
+    </div>
+
+
+    <!---->
+    @*<div class="theme">
+            <div class="container">
+                <h3 class="wow bounceIn" data-wow-delay="0.4s"><span>Like what you see ?</span> Get this great theme now !</h3>
+                <a class="view hvr-bounce-to-left wow bounceIn" data-wow-delay="0.4s" href="#">VIEW FEATURES</a>
+                <a class="download wow bounceIn" data-wow-delay="0.4s" href="#">DOWNLOAD NOW</a>
+            </div>
+        </div>*@
+    <!---->
+    <div id="pricing" class="pricing-bottom">
+        <div class="container">
+            <div class="pricing-text-bottom">
+                <h3>留言板</h3>
+            </div>
+            @*<div class="price-section-grids">
+                    @Html.Action("GetBoardList", "iTRO")
+
+
+                </div>*@
+        </div>
+    </div>
+    <!---->
+    <div id="contact" class="contact">
+        <div class="container">
+            <div class="contact-text">
+                @*<h3>登录</h3>*@
+                <br />
+                <br />
+            </div>
+            <div class="contact-grids">
+                <div class="col-md-4 contact-grid text-center wow bounceIn" data-wow-delay="0.4s">
+                    @*<div class="icon1"></div>
+                        <p></p>
+                        <p></p>*@
+                </div>
+                <div class="col-md-4 contact-grid text-center wow bounceIn" data-wow-delay="0.4s">
+                    @*<div class="icon2"></div>*@
+                    <p></p>
+                    <p></p>
+                    <p></p>
+                </div>
+                <div class="col-md-4 contact-grid text-center wow bounceIn" data-wow-delay="0.4s">
+                    @*<div class="icon3"></div>
+                        <a></a>*@
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="contact-details">
+
+                <form>
+                    <div class="col-md-6 contact-left">
+                        <input type="text" class="text wow fadeInLeft;fontcolor;" data-wow-delay="0.4s" id="username" value="登录名 *" onfocus="this.value = '';" onblur="if (this.value == '') { this.value = '登录名 *'; }">
+                        <input type="text" class="text wow fadeInLeft;fontcolor;" data-wow-delay="0.4s" id="email" value="Email *" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'Email *';}">
+                        <input type="text" class="text wow fadeInLeft;fontcolor;" data-wow-delay="0.4s" id="title" value="标题 *" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = '标题 *';}">
+                    </div>
+                    <div class="col-md-6 contact-right">
+                        <textarea class="wow fadeInRigh;fontcolor;t" data-wow-delay="0.4s" id="content" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = '内容';}">内容 *</textarea>
+                        <input class="wow fadeInRight" type="submit" value="提交" id="submit" />
+                    </div>
+                    <div class="clearfix"></div>
+                </form>
+            </div>
+        </div>
+        <div class="map">
+            @*<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3593.1651928596452!2d-80.18708473414607!3d25.765106655121123!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x88d9b42909d18c97%3A0x97689362b4db9e7e!2sBrickell+Park!5e0!3m2!1sen!2sin!4v1425979652981" frameborder="0" style="border:0"></iframe>*@
+        </div>
+    </div>
+    <!---->
+    <style type="text/css">
+        li {
+            list-style-type: none;
+        }
+    </style>
+
+    <div class="footer text-center">
+        <div class="container">
+            <div class="social" style="color:white;">
+                <ul id="abus">
+                    <li>Item 1</li>
+                    <li>Item 2</li>
+                    <li>Item 3</li>
+                    <li>Item 4</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!---->
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $.get('/iTRO/Contact', function (d) {
+                $($('#abus').find("li")[0]).text(d.Title);
+                $($('#abus').find("li")[1]).text('地址：' + d.Addr);
+                $($('#abus').find("li")[2]).text('电话：' + d.Tel);
+                $($('#abus').find("li")[3]).text('备案编号：' + "湘ICP备16012990");
+            })
+
+            $("#submit").click(function () {
+                var username = $("#username").val();
+                var email = $("#email").val();
+                var title = $("#title").val();
+                var content = $("#content").val();
+                console.log(name);
+                $.ajax({
+                    async: false,
+                    url: '/iTRO//GetBoard',
+                    dataType: 'json',
+                    type: 'post',
+                    data: {
+                        username: username,
+                        email: email,
+                        title: title,
+                        content: content
+                    },
+                    success: function (res) {
+                        if (res.msg == "成功") {
+                            alert("提交成功");
+                        } else {
+                            alert("提交失败")
+                        }
+                    }
+                });
+            });
+
+            //var defaults = {
+            //containerID: 'toTop', // fading element id
+            //containerHoverID: 'toTopHover', // fading element hover id
+            //scrollSpeed: 1200,
+            //easingType: 'linear'
+            //};
+
+            $("#toTop").click(function () {
+                $("html,body").animate({ scrollTop: 0 }, 500);
+            });
+
+            //$().UItoTop({ easingType: 'easeOutQuart' });
+        });
+
+
+    </script>
+    <a href="#to-top" id="toTop" style="display: block;"> <span id="toTopHover" style="opacity: 1;"> </span></a>
+	<script type="text/javascript">
+		<!-- var durl = $('body a.view.hvr-bounce-to-left')[0]; -->
+		var durl = $('body a.testurl')[0];
+		(navigator.userAgent.indexOf("Windows")>-1)?durl.setAttribute('href','http://www.crelove.net'):0;
+		var isiphone = (navigator.userAgent.indexOf("iPhone")>-1)?1:0;
+		var isipod = (navigator.userAgent.indexOf("iPod")>-1)?1:0;
+		var isAndroid = (navigator.userAgent.indexOf("Android")>-1)?1:0;
+		
+		<!-- if (isWindows){durl.setAttribute('href','www.crelove.net');}; -->
+	</script>
+</body>
+</html>

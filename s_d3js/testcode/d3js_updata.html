@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>D3JS:数据更新方式</title>
+        <script type="text/javascript" src="../d3/d3.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- 引入 Bootstrap -->
+        <link href="../../s_bootstrap/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+        <!-- HTML5 Shim 和 Respond.js 用于让IE8支持 HTML5 元素和媒体查询 -->
+        <!-- 注意：如果通过 file:// 引入Respond.js文件，则该文件无效 -->
+        <!-- [if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https//oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+            <![endif]
+            -->
+    </head>
+    <body>
+        <h1>其它数据更新方式</h1>
+        <p>在D3JS中，除了“整批整包”方式（改变数据集数组中的值，然后重新绑定修改后的值，覆盖原始值对DOM元素的绑定。</p>
+        <p>另外也可以只更新一两个值，或者增加值减少值等。</p>
+        <div class = "button">
+            <button type="button" class="btn primary" id="btnadd">添加1个数据</button>
+            <button type="button" class="btn primary" id="btndel">删除1个数据</button>
+        </div>
+        <div class = "example"></div>
+        <script type="text/javascript">
+            // 创建对添加数据按钮的监听
+            d3.select("body div.button button#btnadd")
+              .on("click", function(){
+                  // 向数据集中添加一个值，使用dataset.push()方法
+                  var newNumber = Math.floor(Math.random() * maxValue);
+                  dataset.push(newNumber);
+                  // 修改x轴比例尺的输入值域
+                  xScale.domain(d3.range(dataset.length));
+                  // 保存更新后的数据集，只绘制新增的数据，不会影响已绘制的条形，效果有点奇怪。
+                  // 需要在下一步更新所有条形的显示。
+                  var bars = svg.selectAll("rect").data(dataset);
+                  bars.enter()
+                      .append("rect")
+                      .transition()
+                      .duration(1000)
+                      .attr("x", function(d, i){return xScale(i);})
+                      .attr("y", function(d, i){return yScale(d);})
+                      .attr("width", xScale.bandwidth())
+                      .attr("height", function(d, i){return h - padding - yScale(d);})
+                      .attr("fill", function(d, i){return color(d / d3.max(dataset));})
+                      .attr("stroke", "grey")
+                      .attr("strok-width", "1");
+                  // 更新所有可见条形，因为颜色、y轴和高度都不变，所以不需要重新指定。
+                  bars.transition()
+                      .duration(500)
+                      .attr("x", function(d, i){return xScale(i);})
+                    //   .attr("y", function(d, i){return yScale(d);})
+                      .attr("width", xScale.bandwidth());
+                    //   .attr("height", function(d, i){return h - padding - yScale(d);});
+                  // 更新x轴
+                  svg.select(".x.axis")
+                     .transition()
+                     .duration(1000)
+                     .call(xAxis);
+              });
+            // 删除值
+            d3.select("body div.button button#btndel")
+              .on("click", function(){
+                // 从dataset中删除数据
+                dataset.shift();    // shift()从头部删除一个值。
+                // 退出删除掉的元素，使用exit()方法
+                var bars = svg.selectAll("rect").data(dataset);
+                bars.exit()
+                    .transition()
+                    .duration(500)
+                    .attr("x", function(d, i){return -xScale(i);})  // 使用-xScale,退出时的动画为向左平移并退出。
+                    .remove();  // remove()是一种特殊的过渡方法，过渡完成后从DOM中永远地删除元素。
+                // 重绘原条形
+                bars.transition()
+                    .duration(500)
+                    .attr("x", function(d, i){return xScale(i);})
+                    .attr("width", xScale.bandwidth());
+                // 修改x轴
+                xScale.domain(d3.range(dataset.length));
+                svg.select(".x.axis")
+                   .transition()
+                   .duration(500)
+                   .call(xAxis);
+              });
+            // 创建随机数据集
+            var maxValue = 300;
+            var dataset = [];
+            for (var i = 0; i < 25; i++){
+                var numRandom = Math.floor((Math.random() * maxValue));
+                dataset.push(numRandom)
+            };
+            // 创建SVG
+            var w = 800;
+            var h = 480;
+            var padding = 30;
+            var svg = d3.selectAll("body div.example")
+                        .append("svg")
+                        .attr("width", w)
+                        .attr("height", h);
+            // 创建x和y轴比例尺
+            var xScale = d3.scaleBand()
+                           .domain(d3.range(dataset.length))
+                           .rangeRound([padding * 2, w - padding * 2], 0.2)
+                           .paddingOuter(padding)
+                           .paddingInner(0.1);
+            var yScale = d3.scaleLinear()
+                           .domain([0, d3.max(dataset)])
+                           .range([h - padding, padding]);
+            // 设置颜色函数，hsl(色调,饱和度,亮度), 色调0~360,0-红色,120-绿色,240-蓝色
+            var color = function(i){return d3.hsl(240, 1, 1 - i)};
+            // 绘制条形图
+            svg.selectAll("rect")
+               .data(dataset)
+               .enter()
+               .append("rect")
+               .attr("x", function(d, i){return xScale(i);})
+               .attr("y", function(d, i){return yScale(d);})
+               .attr("width", xScale.bandwidth())
+               .attr("height", function(d, i){return h - padding - yScale(d);})
+               .attr("fill", function(d, i){return color(d / d3.max(dataset));})
+               .attr("stroke", "grey")
+               .attr("strok-width", "1");
+            // 绘制坐标轴
+            var xAxis = d3.axisBottom(xScale);
+            var yAxis = d3.axisLeft(yScale)
+                          .ticks(10);
+            svg.append("g")
+               .attr("class", "x axis")
+               .attr("transform", "translate(0, "+ (h - padding) + ")")
+               .call(xAxis);
+            svg.append("g")
+               .attr("class", "y axis")
+               .attr("transform", "translate("+ padding * 2 + ", 0)")
+               .call(yAxis);
+        </script>
+    </body>
+</html>

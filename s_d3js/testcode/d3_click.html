@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>D3JS:通过事件监听器实现交互</title>
+        <script type="text/javascript" src="../d3/d3.js"></script>
+    </head>
+    <body>
+        <h1> 通过事件监听器实现交互</h1>
+        <p>
+            实现内容：
+            1. 修改数据集的值；
+            2. 把新值重新绑定到已有元素（这样才能重写原来的值）;
+            3. 按需设置新属性值，以更新可见的元素。
+        </p>
+        <h2>第一步,添加事件监听器</h2>
+        <p>事件监听器也是匿名函数，可以监听（一个或多个）特定元素上发生的事件。
+            D3的selection.on()方法是添加事件监听器的简便方法，它接受两个参数：
+            事件类型("click")和监听器(匿名函数)。
+        </p>
+        <strong>监听器示例</strong>
+        <pre>
+            d3.select("p").on("click", function(){
+                // 监听器代码
+            })
+        </pre>
+        <p>
+            第二步，改变数据即重新绑定新值与已有元素.
+            <pre>
+                svg.selectAll("rect")
+                   .data(dataset);
+            </pre>
+        </p>
+        <p>第三步, 重新绘制视觉元素
+            <pre>
+                svg.selectAll("rect")
+                   .data(dataset)
+                   .attr("y",...);
+            </pre>
+        </p>
+        <p>其它，添加过渡动画.transition()，注意在方法链上，要把这个调用插到选择元素之后，改变任何属性之前
+            <pre>
+                svg.selectAll("rect")
+                   .data(dataset)
+                   .transition()   // 添加过渡动画
+                   .duration(100)  // 设置过渡动画的持续时间
+                   .ease("Linear") // 设置动画动画方式
+                   .attr("y", ...);
+            </pre>
+            细微界面反馈，比如鼠标悬停时触发的过度，时间大约150毫秒。显示的视觉过渡，比如整个视图的变化，持续1000毫比较理想。</br>
+            .ease()可以设置动画方式，默认为"cubic-in-out"，先加速再减速。</br>
+            "linear"，按一个速度变化</br>
+            "circle", 逐渐加速，然后突然停止。</br>
+            "elastic", 弹性</br>
+            "bounce", 反复弹跳</br>
+        </p>
+        <div class="example">
+            <p>Click on this text to update the chart with new data values (once).</p>
+        </div>
+        <script type="text/javascript">
+            // 添加事件监听器
+            d3.select("body div.example p")
+              .on("click", function(){
+                  var dataset = dataset2;
+                  svg.selectAll("rect")
+                     .data(dataset)
+                     .transition()  // 添加过渡交互
+                     .delay(1000)     // 设置开时的延迟，1000毫秒
+                     .duration(1000)  // 设置动画持续时间
+                     .each(function(){
+                        d3.select(this)
+                          .attr("fill", "grey");
+                     })               // 设置开始时的操作.each()
+                     .attr("y", function(d, i){return yScale(d);})
+                     .attr("height", function(d, i){return h - padding - yScale(d);})
+                     .each(function(){
+                         d3.select(this)
+                           .attr("fill", function(d, i){return d3.interpolateInferno(color(d))})
+                     });              // 设置结束时的操作
+                  svg.selectAll("text")
+                     .data(dataset)
+                     .transition()
+                     .duration(1000)
+                     .attr("y", function(d, i){return yScale(d) + 12;})
+                     .text(function(d, i){return d;});
+              });
+            // 定义测试数据1，更新前
+            var dataset1 = [11, 12, 15, 20, 18, 17, 16, 18, 23, 25, 5, 10, 13, 19, 21, 25, 22, 18, 15, 13];
+            // 测试数据2，更新后
+            var dataset2 = [22, 22, 25, 20, 18, 17, 16, 18, 23, 25, 5, 10, 13, 19, 21, 25, 22, 18, 15, 13];
+            // 定义svg
+            var w = 600;
+            var h = 250;
+            var padding = 30;
+            var svg = d3.select("body div.example")
+                        .append("svg")
+                        .attr("width", w)
+                        .attr("height", h);
+            var dataset = dataset1;
+            // 定义比例尺
+            var xScale = d3.scaleBand()
+                           .domain(d3.range(dataset.length))
+                           .rangeRound([0, w])
+                           .paddingOuter(padding)
+                           .paddingInner(0.05);
+            var yScale = d3.scaleLinear()
+                           .domain([0, d3.max(dataset)])
+                           .range([h - padding , padding]);
+            var color = d3.scaleLinear()
+                          .domain([0, d3.max(dataset)])
+                          .range([0, 1]);
+            // 绘制数据
+            svg.selectAll("rect")
+               .data(dataset)
+               .enter()
+               .append("rect")
+               .attr("x", function(d, i){return xScale(i);})
+               .attr("y", function(d, i){return yScale(d);})
+               .attr("width", xScale.bandwidth())
+               .attr("height", function(d, i){return h - padding - yScale(d);})
+               .attr("fill", function(d, i){return d3.interpolateInferno(color(d));});
+            // 添加标签
+            svg.selectAll("text")
+               .data(dataset)
+               .enter()
+               .append("text")
+               .attr("x", function(d, i){return xScale(i) + 6;})
+               .attr("y", function(d, i){return yScale(d) + 12;})
+               .attr("font-family", "Microsoft YaHei")
+               .attr("font-size","12px")
+               .attr("fill", "black")
+               .text(function(d, i){return d});
+            // 绘制x轴
+            var xAxis = d3.axisBottom(xScale)
+                          .ticks(5);
+            svg.append("g")
+               .attr("class", "axis")
+               .attr("transform", "translate(0, " + (h - padding) +")" )
+               .call(xAxis);
+            // 绘制y轴
+            var yAxis = d3.axisLeft(yScale)
+                          .ticks(5);
+            svg.append("g")
+               .attr("class", "axis")
+               .attr("transform", "translate(0, " + (h - padding) + ")")
+               .call(yAxis);
+        </script>
+    </body>
+</html>
