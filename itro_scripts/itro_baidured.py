@@ -1,6 +1,82 @@
 # -*- encoding=utf-8 -*-
 """已弃用！！！删除高德云地图上的过期红包数据，只删除，不考虑退回金额的问题"""
 
+class baidu_redpacket(object):
+    """删除百度云地图上的过期红包数据"""
+    def __init__(self):
+        """初始化方法"""
+        self.body = {
+            'geotable_id':'179004',    # 表id
+            'ak':'UvMU5Xjt21eZwABA4KigIPF52bi3qkPn',    # 密钥
+        }
+        self.result = []    # 记录需要处理的数据id
+
+    def get_redpacket(self):
+        """
+            删除过期的红包，注意要使用v3版接口，不要使用v4版
+            按表中的OutTime(Int64)值，小于当前时间戳的记录，则删除
+            百度接口说明：(http://lbsyun.baidu.com/index.php?title=lbscloud/api/geodataV4)
+            接口地址：(http://api.map.baidu.com/geodata/v4/poi/delete)
+        """
+        from time import time
+        from urllib import request
+        from json import loads
+        self.body['OutTime'] = '-,%d' % int(time())
+
+
+        checktime = int(time())
+        checktime = str(int(time())) if checktime=='' else checktime        
+
+
+delurl = 'http://api.map.baidu.com/geodata/v3/poi/delete'
+body = {
+    'geotable_id':'179004',    # 表id
+    'ak':'UvMU5Xjt21eZwABA4KigIPF52bi3qkPn',    # 密钥
+    'ids':'2397291956,2397291955'
+    # 'OutTime':'-,1511506970',
+    # 'is_total_del':'1'
+}
+requests.post(delurl, data=body).json()
+
+
+
+findurl = 'http://api.map.baidu.com/geodata/v3/poi/list'
+body = {
+    'geotable_id':'179004',    # 表id
+    'ak':'UvMU5Xjt21eZwABA4KigIPF52bi3qkPn',    # 密钥
+    'OutTime':'1513072817,-' 
+}
+header = {"Content-Type":"application/x-www-form-urlencoded"}
+findurl = findurl + '?' + '&'.join([('%s=%s' % i) for i in body.items()])
+tmp = requests.get(findurl) 
+
+
+create_url = 'http://api.map.baidu.com/geodata/v3/poi/create'
+t = tmp[2]
+for t in tmp:
+    data = {
+        'title':t['title'],
+        'address':t['address'],
+        'latitude':t['location'][1],
+        'longitude':t['location'][0],
+        'coord_type':int(1),
+        'geotable_id':'179004',
+        'ak':'UvMU5Xjt21eZwABA4KigIPF52bi3qkPn',
+        'updatetime':t['updatetime'],
+        'createtime':t['createtime'],
+        'OutTime':t['OutTime'],
+        'UserLogo':t['UserLogo'],
+        'Method':t['Method'],
+        'UserNickName':t['UserNickName'],
+        'RedPacketAmount':t['RedPacketAmount'],
+        'RedPacketUrl':t.get('RedPacketUrl'),
+        'RedPacketId':t['RedPacketId'],
+    }
+    requests.post(createurl, data=data).json()
+
+
+
+
 class amap_redpacket(object):
     """删除高德云地图上的过期红包数据"""
     def __init__(self):
@@ -12,7 +88,7 @@ class amap_redpacket(object):
         self.lognum = int(0)           # 记录数量
         self.result = []               # 记录需要处理的数据_id
 
-    def get_redpacket(self, checktime=''):
+    def get_redpacket(self, checktime):
         """
             查询过期的红包
             参考地址：http://lbs.amap.com/api/yuntu/reference/cloudsearch/?_=1504254449847
