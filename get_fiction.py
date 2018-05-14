@@ -17,43 +17,88 @@ class Fiction(object):
         get_fiction(), 按照self.fict_cont中保存的各个章节的状态和页面链接，抓取状态false的页面内容
         save_db(), 将self.fict_cont的章节内容，保存到数据库
         save_txt(), 将self.fict_cont的各章节内容，保存到txt文件
-
-    
     """
-    def __init__(self, title=''):
+    def __init__(self, name=''):
         self.content = [] # 保存抓取的章节内容
-        self.conn_info = {
-            'host':'112.74.161.9',
+        self.fundb = {
+            'host':'localhost',
             'port':28010,
-            "db":"mydata",
-            "coll":"web_fiction",
-            "co_catalog":"fiction_catalog",
+            "db":"fun_db",
+            "coll":"fictions",
         }
         # 保存小说目录和信息
-        self.fict_info = {
-            'title':title, 'author':'', 'url':'',
-            'num':0, 'lastchapter':'',
+        self.fiction = {
+            'name':name,   # 小说名称
+            'author':'',    # 作者
+            'fromsite':'http://www.23us.com/',   # 来源网站
+            'url':'',      # url
+            'num':int(0),   # 章节数量
+            'chapter':[
+                {
+                    'title':'', # 章节名称
+                    'url':'',  # 章节URL
+                    'status':False, # 抓取状态
+                    'content':'',   # 章节内容
+                },
+            ],
         }
-        # 保存待抓取的章节内容
-        self.fict_cont = [
-            # {'_id':ObjectId(), 'title':'书名', 'chapter':'章节名', 'curl':'章节链接', 'status':false, 'content':'章节内容'},
-        ]
         # 保存目录
-        self.file_path = "E:/mydata/fiction/"
+        self.fpath = "d:/mydb/fiction/"
         # 抓取的小说
-        self.files = [
+        self.filelist = [
             '剑与魔法与出租车', '异常生物见闻录', '影帝的日常', '儒道至圣', '熊猫人的自我修养', '守望黎明号', '美漫之大冬兵', '俗人回档',
             '完美人生', '美食供应商', '恐怖广播', '仙逆', '放开那个女巫', '暴风法神', '惊悚乐园', '超级怪兽工厂','巨星夫妻', "大影帝",
             "万岁约阿希姆", "当个法师闹革命", "娱乐之荒野食神", "材料帝国", "废土崛起", "修真聊天群", "奋斗在红楼", "文艺时代", "最佳影星",
             "好莱坞制作", "好莱坞之路", "调教大宋", "大影帝", "圣者", "当个法师闹革命", "艾泽拉斯圣光轨迹", "邪神旌旗", "我的1979",
             "莽穿新世界", "重生完美时代", "超级怪兽工厂", "重生日本当厨神", "电影教师", "一世富贵", "穿越1630之崛起南美", "德意志崛起之路",
-            "唐朝工科生", "复活之战斗在第三帝国", "哈利波特与秘密宝藏", "我的魔法时代", 
-            "神游", "鬼股", "灵山", "地师", "惊门", "太上章", "人欲" ,"交锋"
+            "唐朝工科生", "复活之战斗在第三帝国", "哈利波特与秘密宝藏", "我的魔法时代",  "神游", "鬼股", "灵山", "地师", "惊门", "太上章", "人欲" ,
+            "天书奇谭", '天择', '最后一个使徒',
         ]
-        self.filesno = ["寻找走丢的舰娘", "革命吧女神", "漫威世界的术士", "顾道长生", "当个法师闹革命", "艾泽拉斯圣光轨迹", "莽穿新世界", "霜寒之翼", "大宋好屠夫", "帝国霸主", "第三帝国", "潮汐进化","吾名雷恩", ]
+        self.errorlist = [
+            "寻找走丢的舰娘", "革命吧女神", "漫威世界的术士", "顾道长生", "当个法师闹革命", "艾泽拉斯圣光轨迹",
+            "莽穿新世界", "霜寒之翼", "大宋好屠夫", "帝国霸主", "第三帝国", "潮汐进化","吾名雷恩", "交锋",'天道图书馆',
+        ]
         # 代理IP池
         self.proip = []
         self.proips = []
+        # 伪造header头
+        self.header = [
+            {"User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:55.0) Gecko/20100101 Firefox/55.0"},
+            # Chrome + Win7
+            {"User-Agent":'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.163 Safari/535.1'},
+            # Firefox + Win7:
+            {"User-Agent":'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:6.0) Gecko/20100101 Firefox/6.0'},
+            # Safari + Win7:
+            {"User-Agent":'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50'},
+            # Opera + Win7:
+            {"User-Agent":'Opera/9.80 (Windows NT 6.1; U; zh-cn) Presto/2.9.168 Version/11.50'},
+            # IE + Win7+ie9：
+            {"User-Agent":'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Win64; x64; Trident/5.0; .NET CLR 2.0.50727; SLCC2; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; InfoPath.3; .NET4.0C; Tablet PC 2.0; .NET4.0E)'},
+            # Win7+ie8：
+            {"User-Agent":'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; WOW64; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; InfoPath.3)'},
+            # WinXP+ie8：
+            {"User-Agent":'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; GTB7.0)'},
+            # WinXP+ie7：
+            {"User-Agent":'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)'},
+            # WinXP+ie6：
+            {"User-Agent":'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)'},
+            # 傲游3.1.7在Win7+ie9,高速模式:
+            {"User-Agent":'Mozilla/5.0 (Windows; U; Windows NT 6.1; ) AppleWebKit/534.12 (KHTML, like Gecko) Maxthon/3.0 Safari/534.12'},
+            # 傲游3.1.7在Win7+ie9,IE内核兼容模式:
+            {"User-Agent":'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/5.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; InfoPath.3; .NET4.0C; .NET4.0E)'},
+            # 搜狗3.0在Win7+ie9,IE内核兼容模式:
+            {"User-Agent":'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/5.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; InfoPath.3; .NET4.0C; .NET4.0E; SE 2.X MetaSr 1.0)'},
+            # 搜狗3.0在Win7+ie9,高速模式:
+            {"User-Agent":'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.3 (KHTML, like Gecko) Chrome/6.0.472.33 Safari/534.3 SE 2.X MetaSr 1.0'},
+            # 360浏览器3.0在Win7+ie9:
+            {"User-Agent":'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; InfoPath.3; .NET4.0C; .NET4.0E)'},
+            # QQ浏览器6.9(11079)在Win7+ie9,极速模式:
+            {"User-Agent":'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/13.0.782.41 Safari/535.1 QQBrowser/6.9.11079.201'},
+            # QQ浏览器6.9(11079)在Win7+ie9,IE内核兼容模式:
+            {"User-Agent":'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/5.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; InfoPath.3; .NET4.0C; .NET4.0E) QQBrowser/6.9.11079.201'},
+            # 阿云浏览器1.3.0.1724 Beta(编译日期2011-12-05)在Win7+ie9:
+            {"User-Agent":'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)'},
+        ]
 
     def get_proip(self, indexn="1"):
         """获得代理IP"""
@@ -78,228 +123,93 @@ class Fiction(object):
             except Exception as e:
                 print(e)
 
-    def get_db(self, status=False):
-        """ 从数据库中查找没有抓取到的章节 """
-        from pymongo import MongoClient
-        conn = MongoClient(host=self.conn_info["host"], port=self.conn_info["port"])
-        db = conn.get_database(self.conn_info["db"])
-        # 查询小说名称是否存在，是则返回作者、最后一章，以及各章节的抓取状态
-        coll = db.get_collection(self.conn_info["co_catalog"])
-        check = coll.find_one({"title":self.fict_info["title"]})
-        if check:
-            self.fict_info["title"] = check["title"]
-            self.fict_info["author"] = check["author"]
-            self.fict_info["url"] = check["url"]
-            self.fict_info["num"] = check["num"]
-            self.fict_info["lastchapter"] = check["lastchapter"]
-            print ("%s 在数据库中有记录，最后一章：%s" % (self.fict_info["title"], self.fict_info["lastchapter"]))
-            # 从web_fiction表中提取抓取失败的章节记录
-            coll = db.get_collection(self.conn_info["coll"])
-            tmp = list(coll.find({"title":self.fict_info["title"], "status":status}, {"content":0}))
-        coll = conn.get_database(self.conn_info["db"]).get_collection(self.conn_info["coll"])
-        self.fict_cont = list(coll.find({"title":self.fict_info["title"], "status":status}))
-        print("from mongodb get %d chapter" % len(self.fict_cont))
-
-    def get_url(self):
+    def geturl_dingd(self):
         """ 在顶点小说网http://www.23us.com 搜索小说链接"""
-        from urllib import request, parse
-        from bs4 import BeautifulSoup
-        # 注意站内搜索的s值会变化
-        gurl = 'http://zhannei.baidu.com/cse/search?s=5592277830829141693&entry=1&q='+parse.quote(self.fict_info["title"])
-        header = {
-            "User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:55.0) Gecko/20100101 Firefox/55.0"
-        }
-        req = request.Request(gurl, headers=header)
-        tmp = request.urlopen(req).read().decode('utf-8', 'ignore')
-        tmp = BeautifulSoup(tmp, 'lxml')
-        tmp = tmp.body.div.find_all('div', class_='result-item')
-        self.fict_info['title'] = tmp[0].find('a', class_='result-game-item-title-link').get('title')
-        self.fict_info['url'] = tmp[0].find('a', class_='result-game-item-title-link').get('href')
-        self.fict_info["author"] = tmp[0].find("a", class_="result-game-item-info-tag-item").text.replace(" ","").replace("\r\n","")
-        result_brief = tmp[0].find('p').get_text()
-        print(' title : %s ' % self.fict_info['title'],
-              '  url : %s ' % self.fict_info['url'],
-              'brief : %s ' % result_brief,
-              sep='\n')
-        print('\n')
-
-    def get_catalog(self):
-        """ 从顶点小说网站抓取小说的目录，保存数据到self.fict_info """
-        from urllib import request
-        from bs4 import BeautifulSoup
-        import time
-        header = {
-            "User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:55.0) Gecko/20100101 Firefox/55.0"
-        }
-        req = request.Request(self.fict_info["url"], headers=header)
-        tmp = request.urlopen(req).read().decode("gbk", 'ignore')
-        tmp = BeautifulSoup(tmp, 'lxml')
-        tmp_content = tmp.table.select("a")
-        for i in tmp_content:
-            j = {}
-            j['title'] = self.fict_info["title"]
-            j['chapter'] = i.get_text()
-            j['curl'] = self.fict_info['url']+i.get('href')
-            j['status'] = False
-            j['content'] = ""
-            self.fict_cont.append(j)
-        self.fict_info['num'] = len(self.fict_cont)
-        self.fict_info['lastchapter'] = self.fict_cont[-1]['chapter']
-        self.fict_info['updatedate'] = time.strftime('%Y-%m-%d')
-        print('  Fiction name : %s ' % self.fict_info['title'],
-              'Author\'s name : %s ' % self.fict_info['author'],
-              '  Chapter num  : %d ' % self.fict_info['num'],
-              '  Last chapter : %s ' % self.fict_info['lastchapter'],
-              sep='\n')
-
-    def get_content_local(self, gurl):
-        """ 抓取单章节小说内容 """
-        from urllib import request
-        from urllib import error
-        from bs4 import BeautifulSoup
-        import requests
-        import random
-        pro = self.proip
-        try:
-            header = {
-               "User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:55.0) Gecko/20100101 Firefox/55.0"
-            }
-            pro = ["120.132.71.212:80",]
-            req = request.Request(gurl, headers=header)
-            tmp = request.urlopen(req).read().decode('gbk', 'ignore')
-            tmp = BeautifulSoup(tmp, 'lxml').dl.select("dd#contents")
-            result = tmp[0].get_text().replace("\xa0\xa0\xa0\xa0", "\n\r")
-            return result
-        except Exception as e:
-            print(e)
-            return False
-
-    def get_content(self, gurl):
-        """ 抓取单章节小说内容 """
-        import requests
-        import random
+        import requests, random
         from bs4 import BeautifulSoup as bs
-        # 构造header请求头
-        header = {
-            "User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:55.0) Gecko/20100101 Firefox/55.0",
-        }
-        # 用于保存结果的tmp
-        tmp = False
-        # 判断IP池是否还有可用的代理IP，如果没有则直接使用本机的IP
-        if self.proip:
-            choiceip = random.choice(self.proip)
-            print("this ip is %s" % choiceip)
-        else:
-            choiceip = ""
-            print("IP池为空，需要更新IP池")
-        try:
-            request = requests.get(
-                gurl,
-                proxies = {"http":choiceip},
-                headers = header
-            )
-            if request.ok:
-                self.proips.append(choiceip)
-                tmp = request.content.decode("gbk","ignore")
-                tmp = bs(tmp, "lxml").dl.select("dd#contents")[0]
-                tmp = tmp.get_text().replace("\xa0\xa0\xa0\xa0", "\n\r")
-                print("get success")
-            else:
-                print("ip %s get failed" % choiceip)
-                self.proip.remove(choiceip)
-        except Exception as per:
-            print("ip %s get failed, %s" % (choiceip,per))
-            self.proip.remove(choiceip)
-        finally:
-            return tmp
+        # 注意站内搜索的s值会变化
+        url = 'http://zhannei.baidu.com/cse/search?s=5592277830829141693&q=%s' % self.fiction['name']
+        tmp = bs(requests.get(url, headers=random.choice(self.header)).content, 'lxml')
+        tmp = tmp.body.div.find('div', class_='result-game-item-detail')
+        self.fiction['name'] = tmp.a.get('title')
+        self.fiction['url'] = tmp.a.get('href')
+        self.fiction['brief'] = tmp.p.text
+        self.fiction['author'] = tmp.div.a.text.replace('\r\n', '').replace(' ', '')
+        self.fiction['fromsite'] = 'http://www.23us.com/'
+        print('  name : %s' % self.fiction['name'],
+              'author : %s' % self.fiction['author'],
+              ' brief : %s' % self.fiction['brief'],
+              '   url : %s' % self.fiction['url'],
+              sep='\n')
 
-    def save_db(self):
-        """ 将抓到的小说章节，写入MongoDB"""
-        import pymongo
-        client = pymongo.MongoClient(self.conn_info['host'], self.conn_info['port'])
-        db = client.get_database(self.conn_info["db"])
-        # try:
-        #     conn = pymongo.MongoClient(self.conn_info['host'], self.conn_info['port'])
-        #     db = conn.get_database(self.conn_info["db"])
-        #     coll = db.get_collection(self.conn_info["coll"])
-        #     for item in self.fict_cont:
-        #         coll.update_one(
-        #             {
-        #                 "title":item["title"],
-        #                 "chapter":item["chapter"]
-        #             },
-        #             {
-        #                 "$set":{
-        #                     "title":item["title"],
-        #                     "chapter":item["chapter"],
-        #                     "curl":item["curl"],
-        #                     "status":item["status"],
-        #                     # "content":item["content"],
-        #                 }
-        #             },
-        #             upsert=True
-        #         )
-        #         print('%s: %s has been saved' % (item['title'], item["chapter"]))
-        # except:
-        #     print("save db failed")
-        try:
-            coll = db.get_collection(self.conn_info["co_catalog"])
-            coll.update_one(
-                {
-                    "title":self.fict_info["title"]
-                },
-                {
-                    "$set":{
-                        "author":self.fict_info["author"],
-                        "url":self.fict_info["url"],
-                        "num":int(self.fict_info["num"]),
-                        "lastchapter":self.fict_cont[-1]["chapter"],
-                    }
-                },
-                upsert = True
-            )
-            print("%s save success" % self.fict_info["title"])
-        except:
-            print("%s save catalog failed" % self.fict_info["title"])
-        client.close()
+    def getcatalog_dingd(self):
+        """从顶点小说网抓取小说目录"""
+        import requests, random
+        from bs4 import BeautifulSoup as bs
+        tmp = requests.get(self.fiction['url'], headers=random.choice(self.header))
+        tmp = bs(tmp.content, 'lxml')
+        tmp = tmp.body.find('table')
+        tmp = tmp.find_all('a')
+        self.fiction['chapter'] = [{'title':item.text, 'url':self.fiction['url'] + item.get('href'), 'status':False} for item in tmp]
+        self.fiction['num'] = len(self.fiction['chapter'])
+        print('chapter number : %d' % len(self.fiction['chapter']),
+              '  last chapter : %s' % self.fiction['chapter'][-1]['title'],
+              sep='\n')
+
+    def getcontent_dingd(self):
+        """从顶点小说抓取单章节内容"""
+        import requests, random, time
+        from bs4 import BeautifulSoup as bs
+        print('getcontent_dingd %s , chapter %d' %(self.fiction['name'], self.fiction['num']))
+        total = 0
+        error = 0
+        for item in self.fiction['chapter']:
+            if not item['status']:
+                try:
+                    tmp = bs(requests.get(item['url'], headers=random.choice(self.header), timeout=3).content, 'lxml')
+                    item['content'] = tmp.body.find('dd', id='contents').text.replace('\xa0\xa0', '\n')
+                    item['status'] = True
+                    print('getcontent_dingd success %s' % item['title'])
+                except Exception as errorinfo:
+                    item['content'] = ''
+                    error += 1
+                    print('getcontent_dingd failed %s' % errorinfo)
+                time.sleep(1)
+                total += 1
+        print('complete! total %d , error %d' % (total, error))
 
     def save_txt(self):
-        """ 写入到txt文件 """
-        filename = self.file_path+self.fict_info['title']+'.txt'
-        with open(filename, 'a+', encoding='utf8') as writer:
-            for i in self.fict_cont:
-                writer.write('\n\r'+i["chapter"]+"\n\r"+i['content'])
+        """保存到文件"""
+        filename = self.fpath + self.fiction['name']+'.txt'
+        with open(filename, 'w+', encoding='utf8') as writer:
+            for item in self.fiction['chapter']:
+                writer.write('\n\r' + item['title'] + '\n\r' + item['content'] + '\n\r')
 
-    def get_fiction(self, sleept=[2,5]):
-        """抓取小说内容, sleep指定每次抓取成功或失败后的休眠时间"""
-        from time import sleep
-        success = int(0)
-        errors = int(0)
-        for i in self.fict_cont:
-            if i["status"]:
-                continue
-            else:
-                result = self.get_content(i["curl"])
-                if result:
-                    i["content"] = result
-                    i["status"] = True
-                    success += 1
-                    print("成功： %s " % i["chapter"])
-                    sleep(sleept[0])
-                else:
-                    i["status"] = False
-                    errors += 1
-                    print("失败： %s" % i["chapter"])
-                    sleep(sleept[1])
-        print("抓取：%d 章，成功：%d 章，失败：%d 章" % ((success + errors), success, errors))
-
-    def get_list(self):
-        from pymongo import MongoClient
-        client = MongoClient(host=self.conn_info["host"], port=self.conn_info["port"])
-        conn = client.get_database(self.conn_info["db"]).get_collection(self.conn_info["co_catalog"])
-        t = conn.find({},{"_id":0,"title":1,"author":1,"lastchapter":1})
-        t = list(t)
-        for i in t:print("title:%s, author:%s, last:%s" % (i["title"], i["author"], i["lastchapter"]))
+    def save_db(self):
+        """保存到数据库"""
+        import time
+        from pymongo import MongoClient as mc
+        conn = mc(host=self.fundb['host'], port=self.fundb['port'])
+        conn = conn.get_database(self.fundb['db'])
+        conn = conn.get_collection(self.fundb['coll'])
+        conn.update(
+            {'name':self.fiction['name']},
+            {'$set':
+                {'name':self.fiction['name'],
+                'author':self.fiction['author'],
+                'fromsite':self.fiction['fromsite'],
+                'url':self.fiction['url'],
+                'num':self.fiction['num'],
+                'update':int(time.time())
+                }
+            }, 
+            upsert=True)
+        for item in self.fiction['chapter']:
+            if item['status']:
+                conn.update(
+                    {'name':self.fiction['name']},
+                    {'$push':{'chapter':{'title':item['title'], 'url':item['url'], 'status':item['status']}}}
+                )
 
 if __name__ == "__main__":
     s = Fiction()
